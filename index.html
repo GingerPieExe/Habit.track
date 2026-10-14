@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monthly Habit Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f3f1f6;
+    --ink: #151515;
+    --soft: #dcd8e4;
+    --band: #e6e2ee;
+    --miss: #f3d9dc;
+    --heart: #e11d2e;
+    --hand: 'Patrick Hand', 'Segoe Print', 'Comic Sans MS', 'Chalkboard SE', cursive;
+    --title: 'Amatic SC', 'Segoe Print', 'Comic Sans MS', cursive;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper:#1d1b22; --ink:#ecebf0; --soft:#3a3745; --band:#2a2733; --miss:#4a2a30; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--hand); }
+  body { padding: 24px 20px 40px; }
+  .sheet { max-width: 1280px; margin: 0 auto; }
+
+  header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+  .heading h1 { font-family: var(--title); font-size: clamp(44px, 7vw, 84px); line-height: .9; margin: 0; letter-spacing: 2px; text-transform: uppercase; }
+  .heading p { margin: 8px 0 0; font-size: 17px; line-height: 1.35; max-width: 56ch; }
+
+  .picker { border: 2px solid var(--ink); }
+  .yearbar { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--ink); }
+  .yearbar span { font-family: var(--title); font-size: 30px; padding: 0 12px; }
+  .yearbar button { background: none; border: 0; color: var(--ink); font: inherit; font-size: 22px; padding: 4px 14px; cursor: pointer; }
+  .yearbar button:hover { background: var(--band); }
+  .months { display: grid; grid-template-columns: repeat(6, 1fr); }
+  .months button { font-family: var(--title); font-size: 24px; letter-spacing: 1px; background: none; color: var(--ink); border: 0; border-right: 2px solid var(--ink); border-bottom: 2px solid var(--ink); padding: 6px 10px; cursor: pointer; }
+  .months button:nth-child(6n) { border-right: 0; }
+  .months button:nth-child(n+7) { border-bottom: 0; }
+  .months button:hover { background: var(--band); }
+  .months button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+  .monthname { font-family: var(--title); font-size: 34px; margin: 18px 0 6px; }
+
+  .tablewrap { overflow-x: auto; border: 3px solid var(--ink); }
+  table { border-collapse: collapse; width: 100%; min-width: 980px; table-layout: fixed; }
+  th, td { border: 1.5px solid var(--ink); padding: 0; text-align: center; height: 36px; }
+  thead th { background: var(--band); font-weight: normal; height: 44px; }
+  th small { display: block; font-size: 11px; opacity: .65; line-height: 1; }
+  th.hab, td.hab { width: 230px; text-align: left; }
+  th.res, td.res { width: 112px; font-size: 14px; line-height: 1.15; }
+  td.hab { position: relative; background: transparent; }
+  td.hab input { width: 100%; height: 100%; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 18px; padding: 0 30px 0 10px; outline: none; }
+  td.hab input:focus { background: var(--band); }
+  td.hab input::placeholder { color: var(--ink); opacity: .3; }
+  .del { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border: 0; border-radius: 50%; background: none; color: var(--ink); font-size: 16px; line-height: 1; cursor: pointer; opacity: 0; }
+  tr:hover .del, .del:focus-visible { opacity: .6; }
+  .del:hover { opacity: 1; background: var(--soft); }
+
+  td.day { cursor: pointer; padding: 0; }
+  td.day button { display: block; width: 100%; height: 100%; min-height: 35px; border: 0; background: transparent; color: var(--ink); cursor: pointer; position: relative; }
+  td.day button:hover { background: var(--band); }
+  td.day button:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
+  td.day.on button::after {
+    content: ''; position: absolute; left: 50%; top: 46%; width: 8px; height: 15px;
+    border-right: 3.5px solid var(--ink); border-bottom: 3.5px solid var(--ink);
+    transform: translate(-50%, -55%) rotate(40deg);
+    animation: pop .14s ease-out;
+  }
+  @keyframes pop { from { transform: translate(-50%, -55%) rotate(40deg) scale(.3); } to { transform: translate(-50%, -55%) rotate(40deg) scale(1); } }
+  td.day.x button::before, td.day.x button::after {
+    content: ''; position: absolute; left: 50%; top: 50%; width: 3.5px; height: 18px; background: var(--heart);
+    transform: translate(-50%, -50%) rotate(45deg); animation: none;
+  }
+  td.day.x button::after { transform: translate(-50%, -50%) rotate(-45deg); border: 0; }
+  td.day.skip { background-image: linear-gradient(rgba(225,29,46,.28), rgba(225,29,46,.28)); }
+  td.day.skip button::before, td.day.skip button::after { background: #9d1220; }
+
+  /* past / today / upcoming columns, each tinted at 40% opacity */
+  :root { --c-past: rgba(96,140,230,.40); --c-today: rgba(255,190,40,.40); --c-future: rgba(80,190,140,.40); }
+  thead th.past, td.day.past { background-color: var(--c-past); }
+  thead th.today, td.day.today { background-color: var(--c-today); }
+  thead th.future, td.day.future { background-color: var(--c-future); }
+  thead th.today { font-weight: bold; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 15px; margin: 0 0 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 18px; height: 18px; border: 1.5px solid var(--ink); display: inline-block; }
+  .legend .lp { background: var(--c-past); } .legend .lt { background: var(--c-today); } .legend .lf { background: var(--c-future); }
+  table, th, td, .legend i { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  td.day.today-col { box-shadow: inset 0 0 0 2px var(--ink); }
+  td.off { background: repeating-linear-gradient(45deg, var(--soft) 0 4px, transparent 4px 8px); }
+  td.res b { font-weight: normal; }
+
+  .addrow { display: flex; justify-content: space-between; align-items: center; margin: 8px 0 0; flex-wrap: wrap; gap: 8px; }
+  .addrow .hint { font-size: 14px; opacity: .7; }
+  .btn { font: inherit; font-size: 17px; background: none; color: var(--ink); border: 2px solid var(--ink); padding: 4px 14px; cursor: pointer; }
+  .btn:hover { background: var(--ink); color: var(--paper); }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .lower { display: grid; grid-template-columns: 320px 1fr; gap: 20px; margin-top: 22px; align-items: stretch; }
+  @media (max-width: 760px) { .lower { grid-template-columns: 1fr; } .months { grid-template-columns: repeat(4, 1fr); } .months button:nth-child(6n) { border-right: 2px solid var(--ink);} .months button:nth-child(4n) { border-right: 0; } .months button:nth-child(n+7) { border-bottom: 2px solid var(--ink);} .months button:nth-child(n+9) { border-bottom: 0; } }
+  .report { border: 2px solid var(--ink); padding: 12px 14px 14px; }
+  .report h2 { margin: 0 0 10px; font-size: 20px; font-weight: normal; }
+  .report label { display: block; font-size: 16px; margin-top: 10px; }
+  .report input, .report textarea, .notes textarea { width: 100%; font: inherit; font-size: 17px; color: var(--ink); background: transparent; border: 0; border-bottom: 1.5px solid var(--ink); padding: 3px 0; outline: none; }
+  .report textarea { resize: vertical; }
+  .report input:focus, .report textarea:focus { background: var(--band); }
+  .pct { display: flex; align-items: baseline; gap: 6px; font-size: 22px; padding-top: 4px; }
+  .notes { border: 2px solid var(--ink); display: flex; flex-direction: column; }
+  .notes textarea { flex: 1; border: 0; min-height: 190px; padding: 12px 14px; resize: vertical; line-height: 1.5; }
+  .notes textarea:focus { background: var(--band); }
+
+  .foot { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 26px; flex-wrap: wrap; }
+  .foot strong { font-family: Verdana, 'Segoe UI', Arial, sans-serif; font-size: clamp(20px, 3vw, 30px); }
+  .foot .rule { font-size: 16px; opacity: .8; margin-top: 4px; }
+  .doodle { width: 120px; height: auto; flex: none; }
+  .doodle * { stroke: var(--ink); }
+
+  dialog { background: var(--paper); color: var(--ink); border: 3px solid var(--ink); padding: 18px 20px; max-width: 520px; width: 92%; font-family: var(--hand); }
+  dialog::backdrop { background: rgba(0,0,0,.45); }
+  dialog h2 { margin: 0 0 6px; font-weight: normal; font-size: 24px; }
+  dialog p { margin: 0 0 12px; font-size: 16px; }
+  dialog input[type=file] { font: inherit; margin-bottom: 10px; max-width: 100%; }
+  dialog textarea { width: 100%; font: inherit; font-size: 14px; color: var(--ink); background: transparent; border: 2px solid var(--ink); padding: 8px; }
+  .dlgbtns { display: flex; gap: 8px; margin-top: 12px; }
+  .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 8px 16px; font-size: 16px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .toast.show { opacity: 1; }
+
+  @media print {
+    body { padding: 0; } dialog, .btns, .del, .addrow .hint, .yearbar button { display: none !important; }
+    .tablewrap { overflow: visible; } table { min-width: 0; }
+    @page { size: landscape; margin: 10mm; }
+  }
+  @media (prefers-reduced-motion: reduce) { td.day.on button::after { animation: none; } }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="heading">
+      <h1>Monthly Habit Tracker</h1>
+      <p>By repeating this, I'm changing — quietly, maybe unnoticed, but still changing ✿<br>Doing something is more important than doing it perfectly ♥</p>
+    </div>
+    <div class="picker" aria-label="Choose month">
+      <div class="yearbar">
+        <button id="prevYear" aria-label="Previous year">‹</button>
+        <span id="yearLabel"></span>
+        <button id="nextYear" aria-label="Next year">›</button>
+      </div>
+      <div class="months" id="months"></div>
+    </div>
+  </header>
+
+  <div class="monthname" id="monthName"></div>
+  <div class="legend" aria-label="Colour key">
+    <span><i class="lp"></i>Past days</span>
+    <span><i class="lt"></i>Today</span>
+    <span><i class="lf"></i>Upcoming days</span>
+  </div>
+
+  <div class="tablewrap">
+    <table id="grid">
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="addrow">
+    <span class="hint">Click a box: ✓ done, click again: ✗ missed, again: blank. Click a habit name to rename it.</span>
+    <div class="btns">
+      <button class="btn" id="addHabit">+ Add habit</button>
+      <button class="btn" id="clearMonth">Clear this month's marks</button>
+      <button class="btn" id="soundBtn" aria-pressed="true">Sound: on</button>
+      <button class="btn" id="exportBtn">Export backup</button>
+      <button class="btn" id="importBtn">Import data</button>
+      <button class="btn" id="printBtn">Print</button>
+    </div>
+  </div>
+
+  <div class="lower">
+    <section class="report">
+      <h2>Monthly Report</h2>
+      <label>Biggest win:<input id="rWin" type="text"></label>
+      <label>Consistency:
+        <div class="pct"><span id="rCons">0</span>%</div>
+      </label>
+      <label>Habit that needs simplification:<input id="rSimplify" type="text"></label>
+      <label>Weight check:<input id="rWeight" type="text"></label>
+      <label>How do you feel compared to last month?<textarea id="rFeel" rows="2"></textarea></label>
+    </section>
+    <section class="notes">
+      <textarea id="notes" placeholder="Notes for this month…" aria-label="Notes for this month"></textarea>
+    </section>
+  </div>
+
+  <div class="foot">
+    <div>
+      <strong>Weak Attempt is Better Than No Attempt.</strong>
+      <div class="rule">“Don't Skip 2 Days in a Row” — a red tint marks a second ✗ in a row.</div>
+    </div>
+    <svg class="doodle" viewBox="0 0 120 130" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M60 14 C48 4 34 14 44 26 L60 40 L76 26 C86 14 72 4 60 14Z" fill="#e11d2e" stroke="#151515"/>
+      <ellipse cx="62" cy="68" rx="40" ry="32" fill="var(--paper)"/>
+      <circle cx="48" cy="66" r="3" fill="#151515"/>
+      <circle cx="76" cy="66" r="3" fill="#151515"/>
+      <path d="M58 74 Q62 78 66 74"/>
+      <path d="M38 76 l8 0 M80 76 l8 0" stroke="#e8707c"/>
+      <path d="M30 100 C36 118 46 124 62 124 C78 124 88 118 94 100" fill="var(--paper)"/>
+      <path d="M22 102 L48 108 L30 118 Z" fill="var(--paper)"/>
+      <path d="M52 108 c-5 -6 -12 2 -4 8 l4 3 l5 -4 c7 -6 0 -14 -5 -7z" fill="var(--paper)"/>
+    </svg>
+  </div>
+</div>
+<dialog id="importDlg">
+  <h2>Import data</h2>
+  <p>Choose your old tracker's <b>.html file</b> (or a .json backup) and it is read straight away. You can also paste backup data below.</p>
+  <input type="file" id="importFile" accept=".html,.htm,.json,.txt,text/html,application/json,text/plain">
+  <textarea id="importText" rows="6" placeholder="Or paste the data here…" aria-label="Paste data"></textarea>
+  <div class="dlgbtns">
+    <button class="btn" id="importGo">Import</button>
+    <button class="btn" id="importCancel">Cancel</button>
+  </div>
+</dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const KEY = 'monthly-habit-tracker-v1';
+  const DEFAULT_HABITS = ['Drink water','Walk 20 minutes','Read 10 pages','Sleep before 11','Stretch','','','','','',''];
+
+  const uid = () => 'h' + Math.random().toString(36).slice(2, 9);
+  const now = new Date();
+
+  let state = load() || {
+    habits: DEFAULT_HABITS.map(n => ({ id: uid(), name: n })),
+    months: {},
+    view: { y: now.getFullYear(), m: now.getMonth() }
+  };
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; }
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  const $ = id => document.getElementById(id);
+  const mkey = () => state.view.y + '-' + String(state.view.m + 1).padStart(2, '0');
+  function monthData() {
+    const k = mkey();
+    if (!state.months[k]) state.months[k] = { ticks: {}, crosses: {}, report: { win:'', simplify:'', weight:'', feel:'' }, notes: '' };
+    if (!state.months[k].crosses) state.months[k].crosses = {};
+    return state.months[k];
+  }
+  const daysIn = (y, m) => new Date(y, m + 1, 0).getDate();
+
+  function toast(msg) {
+    const t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 1600);
+  }
+
+  // ---- soft synthesized sound effects: warm kalimba / music-box tones with a little room reverb ----
+  const Sound = (function () {
+    const VOLUME = 0.5;           // overall volume: 50%
+    let ctx = null, master = null, bus = null, lastType = 0, hasPan = false;
+    let enabled = true;
+    try { enabled = localStorage.getItem(KEY + '-sound') !== 'off'; } catch (e) {}
+
+    // major pentatonic: every note sits well with every other, so nothing ever clashes
+    const SCALE = [0, 2, 4, 7, 9];
+    const BASE = 261.63;          // C4
+    const freqOf = (deg, oct) => BASE * Math.pow(2, (SCALE[deg % 5] + 12 * (oct + Math.floor(deg / 5))) / 12);
+    const r = (a, b) => a + Math.random() * (b - a);
+
+    // kalimba-like voice: a pure fundamental plus quick-fading woody overtones
+    const KALIMBA = [[1, 1, 1], [4, 0.16, 0.28], [9.2, 0.04, 0.07]];
+    const SOFT = [[1, 1, 1], [2, 0.45, 0.5], [4, 0.12, 0.2]];
+
+    function setup() {
+      if (ctx) return true;
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return false;
+        ctx = new AC({ latencyHint: 'interactive' });
+        hasPan = typeof ctx.createStereoPanner === 'function';
+
+        // gentle compressor keeps peaks smooth and never harsh
+        const comp = ctx.createDynamicsCompressor();
+        comp.threshold.value = -20; comp.knee.value = 24; comp.ratio.value = 3;
+        comp.attack.value = 0.004; comp.release.value = 0.25;
+        master = ctx.createGain(); master.gain.value = VOLUME;
+        master.connect(comp); comp.connect(ctx.destination);
+
+        bus = ctx.createGain();
+        const dry = ctx.createGain(); dry.gain.value = 0.9;
+        bus.connect(dry); dry.connect(master);
+
+        // small synthetic room: a darkened, decaying noise impulse
+        const len = Math.floor(ctx.sampleRate * 1.6);
+        const imp = ctx.createBuffer(2, len, ctx.sampleRate);
+        for (let ch = 0; ch < 2; ch++) {
+          const d = imp.getChannelData(ch); let lp = 0;
+          for (let i = 0; i < len; i++) {
+            lp += 0.22 * ((Math.random() * 2 - 1) - lp);          // roll off the highs
+            d[i] = lp * Math.pow(1 - i / len, 2.6) * 2.2;
+          }
+        }
+        const verb = ctx.createConvolver(); verb.buffer = imp;
+        const send = ctx.createGain(); send.gain.value = 0.34;
+        bus.connect(send); send.connect(verb); verb.connect(master);
+        return true;
+      } catch (e) { return false; }
+    }
+    function ready() {
+      if (!enabled || !setup()) return false;
+      if (ctx.state === 'suspended') ctx.resume();
+      return true;
+    }
+    // wake the audio engine on the very first touch/click/keypress so the first sound isn't late
+    ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
+      document.addEventListener(ev, () => { if (enabled) ready(); }, { capture: true, passive: true }));
+
+    // one plucked note
+    function note(freq, o) {
+      o = o || {};
+      const t = ctx.currentTime + 0.005 + (o.delay || 0);
+      const dur = o.dur || 0.9, vol = o.vol || 0.5;
+      const out = ctx.createGain(); out.gain.value = vol;
+      let node = out;
+      if (hasPan) {
+        const pan = ctx.createStereoPanner(); pan.pan.value = o.pan !== undefined ? o.pan : r(-0.18, 0.18);
+        out.connect(pan); node = pan;
+      }
+      node.connect(bus);
+      (o.partials || KALIMBA).forEach(([ratio, amp, decay]) => {
+        const osc = ctx.createOscillator(); osc.type = 'sine';
+        osc.frequency.value = freq * ratio * (1 + r(-0.0008, 0.0008));   // tiny natural drift
+        const g = ctx.createGain();
+        const end = t + Math.max(0.05, dur * decay);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(amp, t + 0.006);                  // soft attack, no click
+        g.gain.exponentialRampToValueAtTime(0.0001, end);
+        osc.connect(g); g.connect(out);
+        osc.start(t); osc.stop(end + 0.05);
+      });
+    }
+
+    return {
+      isEnabled: () => enabled,
+      setEnabled(v) { enabled = v; try { localStorage.setItem(KEY + '-sound', v ? 'on' : 'off'); } catch (e) {} },
+      // tick: two rising notes, a little "done!" chime. Ticking along a row plays a gentle melody.
+      tick(d) {
+        if (!ready()) return;
+        const deg = ((d || 1) - 1) % 8;
+        note(freqOf(deg, 0), { dur: 1.1, vol: 0.55 });
+        note(freqOf(deg + 2, 0), { dur: 1.3, vol: 0.4, delay: 0.085 });
+      },
+      // cross: one low, muted wooden knock - acknowledges the miss without scolding
+      cross() {
+        if (!ready()) return;
+        note(196, { dur: 0.45, vol: 0.7, partials: SOFT, pan: 0 });
+      },
+      // clearing a box: two soft notes drifting down
+      erase() {
+        if (!ready()) return;
+        note(freqOf(4, 0), { dur: 0.5, vol: 0.3, partials: SOFT });
+        note(freqOf(2, 0), { dur: 0.6, vol: 0.28, partials: SOFT, delay: 0.09 });
+      },
+      // month / year switch: a soft chime run - upward going forward, downward going back
+      flip(dir) {
+        if (!ready()) return;
+        const degs = dir < 0 ? [4, 3, 2, 1, 0] : [0, 1, 2, 3, 4];
+        degs.forEach((dg, i) => note(freqOf(dg, 1), {
+          dur: 1.2, vol: 0.28 + i * 0.015, delay: i * 0.06, pan: (i - 2) * 0.12
+        }));
+      },
+      // writing: tiny soft wooden taps, sparse and quiet
+      write(deleting) {
+        const n = performance.now();
+        if (n - lastType < 70) return;
+        lastType = n;
+        if (!ready()) return;
+        if (deleting) note(freqOf(1, 0), { dur: 0.14, vol: 0.2, partials: SOFT });
+        else note(freqOf(Math.floor(Math.random() * 5), 1), { dur: 0.16, vol: 0.2, partials: [[1, 1, 1], [4, 0.12, 0.3]] });
+      }
+    };
+  })();
+
+  // writing sound for any text field
+  document.addEventListener('input', e => {
+    const el = e.target;
+    if (!(el instanceof HTMLTextAreaElement || (el instanceof HTMLInputElement && (el.type === 'text' || !el.type)))) return;
+    if (el.id === 'importText') return;
+    Sound.write(typeof e.inputType === 'string' && e.inputType.indexOf('delete') === 0);
+  });
+
+  function renderPicker() {
+    $('yearLabel').textContent = state.view.y;
+    const box = $('months'); box.innerHTML = '';
+    MONTHS.forEach((n, i) => {
+      const b = document.createElement('button');
+      b.textContent = n;
+      b.setAttribute('aria-pressed', i === state.view.m);
+      b.onclick = () => { if (i !== state.view.m) Sound.flip(i > state.view.m ? 1 : -1); state.view.m = i; save(); renderAll(); };
+      box.appendChild(b);
+    });
+    $('monthName').textContent = FULL[state.view.m] + ' ' + state.view.y;
+  }
+
+  function renderTable() {
+    const { y, m } = state.view;
+    const dim = daysIn(y, m);
+    const md = monthData();
+    const isThisMonth = (y === now.getFullYear() && m === now.getMonth());
+    const today = now.getDate();
+    const isPast = d => (y < now.getFullYear()) || (y === now.getFullYear() && (m < now.getMonth() || (m === now.getMonth() && d < today)));
+
+    const todayStart = () => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime(); };
+    const relCls = d => { const a = new Date(y, m, d).getTime(), b = todayStart(); return a < b ? 'past' : a > b ? 'future' : 'today'; };
+
+    // header
+    let h = '<tr><th class="hab">HABIT</th>';
+    for (let d = 1; d <= 31; d++) {
+      if (d > dim) { h += '<th></th>'; continue; }
+      const wd = ['S','M','T','W','T','F','S'][new Date(y, m, d).getDay()];
+      h += `<th class="${relCls(d)}">${d}<small>${wd}</small></th>`;
+    }
+    h += '<th class="res">Result</th></tr>';
+    $('thead').innerHTML = h;
+
+    // body
+    const body = $('tbody'); body.innerHTML = '';
+    state.habits.forEach(hb => {
+      const ticks = new Set(md.ticks[hb.id] || []);
+      const crosses = new Set(md.crosses[hb.id] || []);
+      const tr = document.createElement('tr');
+      tr.dataset.id = hb.id;
+
+      const th = document.createElement('td'); th.className = 'hab';
+      const inp = document.createElement('input');
+      inp.type = 'text'; inp.value = hb.name; inp.placeholder = 'Type a habit…';
+      inp.setAttribute('aria-label', 'Habit name');
+      inp.oninput = () => { hb.name = inp.value; save(); updateReport(); };
+      const del = document.createElement('button');
+      del.className = 'del'; del.textContent = '×'; del.title = 'Remove habit'; del.setAttribute('aria-label', 'Remove habit');
+      del.onclick = () => {
+        if (hb.name.trim() && !confirm('Remove "' + hb.name + '" and its ticks from every month?')) return;
+        state.habits = state.habits.filter(x => x.id !== hb.id);
+        Object.values(state.months).forEach(mm => { delete mm.ticks[hb.id]; if (mm.crosses) delete mm.crosses[hb.id]; });
+        save(); renderTable(); updateReport();
+      };
+      th.append(inp, del); tr.appendChild(th);
+
+      for (let d = 1; d <= 31; d++) {
+        const td = document.createElement('td');
+        if (d > dim) { td.className = 'off'; tr.appendChild(td); continue; }
+        const on = ticks.has(d);
+        const x = crosses.has(d);
+        let cls = 'day ' + relCls(d) + (on ? ' on' : '') + (x ? ' x' : '');
+        if (x && d > 1 && crosses.has(d - 1)) cls += ' skip';
+        if (isThisMonth && d === today) cls += ' today-col';
+        td.className = cls;
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('aria-label', (hb.name || 'Habit') + ', day ' + d + ': ' + (on ? 'done' : x ? 'missed' : 'not marked'));
+        b.onclick = () => toggle(hb.id, d);
+        td.appendChild(b); tr.appendChild(td);
+      }
+      const res = document.createElement('td'); res.className = 'res';
+      res.innerHTML = resultHTML(ticks.size, crosses.size);
+      tr.appendChild(res);
+      body.appendChild(tr);
+    });
+    updateReport();
+  }
+
+  function resultHTML(t, c) {
+    const pct = (t + c) ? Math.round(t / (t + c) * 100) : 0;
+    return `<b>${t}✓ ${c}✗</b><br>${(t + c) ? pct + '%' : '–'}`;
+  }
+
+  function toggle(id, d) {
+    const md = monthData();
+    const t = new Set(md.ticks[id] || []);
+    const c = new Set(md.crosses[id] || []);
+    // cycle: empty -> tick -> cross -> empty
+    if (t.has(d)) { t.delete(d); c.add(d); Sound.cross(); }
+    else if (c.has(d)) { c.delete(d); Sound.erase(); }
+    else { t.add(d); Sound.tick(d); }
+    md.ticks[id] = [...t].sort((a, b) => a - b);
+    md.crosses[id] = [...c].sort((a, b) => a - b);
+    save();
+    // keep scroll position while re-rendering
+    const wrap = document.querySelector('.tablewrap'); const sx = wrap.scrollLeft;
+    renderTable(); wrap.scrollLeft = sx;
+  }
+
+  function updateReport() {
+    const md = monthData();
+    let t = 0, c = 0;
+    state.habits.filter(h => h.name.trim()).forEach(h => {
+      t += (md.ticks[h.id] || []).length;
+      c += (md.crosses[h.id] || []).length;
+    });
+    const pct = (t + c) ? Math.round(t / (t + c) * 100) : 0;
+    $('rCons').textContent = pct;
+  }
+
+  function renderReport() {
+    const md = monthData();
+    $('rWin').value = md.report.win;
+    $('rSimplify').value = md.report.simplify;
+    $('rWeight').value = md.report.weight;
+    $('rFeel').value = md.report.feel;
+    $('notes').value = md.notes;
+  }
+
+  [['rWin','win'],['rSimplify','simplify'],['rWeight','weight'],['rFeel','feel']].forEach(([id, f]) => {
+    $(id).addEventListener('input', e => { monthData().report[f] = e.target.value; save(); });
+  });
+  $('notes').addEventListener('input', e => { monthData().notes = e.target.value; save(); });
+
+  $('prevYear').onclick = () => { Sound.flip(-1); state.view.y--; save(); renderAll(); };
+  $('nextYear').onclick = () => { Sound.flip(1); state.view.y++; save(); renderAll(); };
+  $('addHabit').onclick = () => {
+    state.habits.push({ id: uid(), name: '' }); save(); renderTable();
+    const inputs = document.querySelectorAll('td.hab input'); inputs[inputs.length - 1].focus();
+  };
+  $('clearMonth').onclick = () => {
+    if (!confirm('Clear all marks for ' + FULL[state.view.m] + ' ' + state.view.y + '?')) return;
+    monthData().ticks = {}; monthData().crosses = {}; save(); renderTable(); toast('Marks cleared');
+  };
+  $('printBtn').onclick = () => window.print();
+  function soundLabel() {
+    $('soundBtn').textContent = 'Sound: ' + (Sound.isEnabled() ? 'on' : 'off');
+    $('soundBtn').setAttribute('aria-pressed', Sound.isEnabled());
+  }
+  $('soundBtn').onclick = () => { Sound.setEnabled(!Sound.isEnabled()); soundLabel(); if (Sound.isEnabled()) Sound.tick(); };
+  soundLabel();
+
+  // ---- export / import ----
+  $('exportBtn').onclick = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'habit-tracker-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast('Backup downloaded');
+  };
+  const dlg = $('importDlg');
+  $('importBtn').onclick = () => { $('importText').value = ''; $('importFile').value = ''; dlg.showModal(); };
+  $('importCancel').onclick = () => dlg.close();
+  $('importFile').onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      const t = String(r.result);
+      if (/\.html?$/i.test(f.name) || /^\s*</.test(t)) importHtml(t);
+      else $('importText').value = t;
+    };
+    r.readAsText(f);
+  };
+
+  // ---- import from an HTML tracker file ----
+  function importHtml(text) {
+    const doc = new DOMParser().parseFromString(text, 'text/html');
+
+    // 1) saved data embedded in the page's scripts
+    for (const sc of doc.querySelectorAll('script')) {
+      const m = sc.textContent.match(/\{[\s\S]*"habits"[\s\S]*"months"[\s\S]*\}/);
+      if (m) {
+        try {
+          const full = normalize(JSON.parse(m[0]));
+          if (confirm('Found saved tracker data in that file. Replace the current tracker with it?')) {
+            state = full; save(); dlg.close(); renderAll(); toast('Data imported');
+          }
+          return;
+        } catch (e) {}
+      }
+    }
+
+    // 2) read the habit table
+    const tables = [...doc.querySelectorAll('table')].sort((a, b) => b.rows.length - a.rows.length);
+    if (!tables.length) { toast("Couldn't find a habit table in that file"); return; }
+    const rows = [...tables[0].rows];
+    const colDay = {}; let headerIdx = -1;
+    rows.forEach((r, i) => {
+      if (headerIdx >= 0) return;
+      const cs = [...r.cells];
+      const nums = cs.filter(c => /^\s*\d{1,2}(?!\d)/.test(c.textContent));
+      if (nums.length >= 5) {
+        headerIdx = i;
+        cs.forEach((c, j) => { const m = c.textContent.trim().match(/^(\d{1,2})(?!\d)/); if (m && +m[1] >= 1 && +m[1] <= 31) colDay[j] = +m[1]; });
+      }
+    });
+    if (headerIdx < 0) { headerIdx = 0; for (let j = 1; j <= 31; j++) colDay[j] = j; }
+
+    const found = [];
+    rows.slice(headerIdx + 1).forEach(r => {
+      const cs = [...r.cells]; if (!cs.length) return;
+      const inp = cs[0].querySelector('input[type=text], input:not([type])');
+      let name = inp ? (inp.value || inp.getAttribute('value') || '') : cs[0].textContent;
+      name = name.trim();
+      if (/^(day|habit|result)$/i.test(name)) return;
+      const t = [], x = [];
+      cs.forEach((c, j) => {
+        const d = colDay[j]; if (!d) return;
+        const cls = ((c.className || '') + ' ' + [...c.querySelectorAll('[class]')].map(e => e.className).join(' ')).toLowerCase();
+        const txt = c.textContent.trim();
+        const cb = c.querySelector('input[type=checkbox]');
+        if ((cb && cb.hasAttribute('checked')) || /[✓✔☑√]/.test(txt) || /\b(on|done|checked|tick|ticked|active|filled|complete|completed)\b/.test(cls)) t.push(d);
+        else if (/[✗✘×✕❌]/.test(txt) || /^x$/i.test(txt) || /\b(x|cross|crossed|miss|missed)\b/.test(cls)) x.push(d);
+      });
+      if (name || t.length || x.length) found.push({ name, t, x });
+    });
+    if (!found.length) { toast("Couldn't find any habits in that file"); return; }
+
+    // work out which month the file is about
+    const hay = ((doc.title || '') + ' ' + (doc.body ? doc.body.textContent : '')).slice(0, 8000);
+    const uniq = a => [...new Set(a)];
+    let y = state.view.y, m = state.view.m;
+    const fullHits = uniq((hay.match(new RegExp('\\b(' + FULL.join('|') + ')\\b', 'gi')) || []).map(v => FULL.findIndex(f => f.toLowerCase() === v.toLowerCase())));
+    const abbrHits = uniq((hay.match(new RegExp('\\b(' + MONTHS.join('|') + ')\\b', 'gi')) || []).map(v => MONTHS.indexOf(v.toUpperCase())));
+    if (fullHits.length === 1) m = fullHits[0]; else if (abbrHits.length === 1) m = abbrHits[0];
+    const yr = hay.match(/\b(20\d\d)\b/); if (yr) y = +yr[1];
+
+    const marks = found.reduce((n, f) => n + f.t.length + f.x.length, 0);
+    if (!confirm('Found ' + found.length + ' habit row(s) with ' + marks + ' mark(s) for ' + FULL[m] + ' ' + y + '. Add them to this tracker?')) return;
+
+    state.view = { y, m };
+    const md = monthData();
+    found.forEach((f, i) => {
+      const nm = f.name || ('Imported habit ' + (i + 1));
+      let h = state.habits.find(h => h.name.trim().toLowerCase() === nm.toLowerCase())
+           || state.habits.find(h => !h.name.trim() && !(md.ticks[h.id] || []).length && !(md.crosses[h.id] || []).length);
+      if (!h) { h = { id: uid(), name: nm }; state.habits.push(h); }
+      else if (!h.name.trim()) h.name = nm;
+      const t = new Set([...(md.ticks[h.id] || []), ...f.t]);
+      const c = new Set([...(md.crosses[h.id] || []), ...f.x].filter(d => !t.has(d)));
+      md.ticks[h.id] = [...t].sort((a, b) => a - b);
+      md.crosses[h.id] = [...c].sort((a, b) => a - b);
+    });
+    save(); dlg.close(); renderAll(); toast('Imported ' + found.length + ' habit(s)');
+  }
+  function normalize(data) {
+    // accepts this tracker's format (habits + months), tolerates missing crosses/report/notes
+    if (!data || !Array.isArray(data.habits) || typeof data.months !== 'object' || !data.months) throw new Error('bad');
+    const habits = data.habits.map(h => typeof h === 'string' ? { id: uid(), name: h } : { id: h.id || uid(), name: String(h.name || '') });
+    const months = {};
+    Object.keys(data.months).forEach(k => {
+      const m = data.months[k] || {};
+      months[k] = {
+        ticks: m.ticks || {}, crosses: m.crosses || {},
+        report: Object.assign({ win:'', simplify:'', weight:'', feel:'' }, m.report || {}),
+        notes: m.notes || ''
+      };
+    });
+    const view = data.view && typeof data.view.y === 'number' ? data.view : { y: now.getFullYear(), m: now.getMonth() };
+    return { habits, months, view };
+  }
+  $('importGo').onclick = () => {
+    let parsed;
+    try { parsed = normalize(JSON.parse($('importText').value.trim())); }
+    catch (e) { toast("That doesn't look like tracker data"); return; }
+    if (!confirm('Replace the current tracker with the imported data?')) return;
+    state = parsed; save(); dlg.close(); renderAll(); toast('Data imported');
+  };
+
+  function renderAll() { renderPicker(); renderTable(); renderReport(); }
+  renderAll();
+})();
+</script>
+</body>
+</html>
