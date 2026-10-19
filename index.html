@@ -1,10 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="google-site-verification" content="rBmhIOeCU6Yi9CkFArCKHBLpXI57S7__ounbWVMvIY0" />
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Monthly Habit Tracker</title>
+<script>(function(){try{var l=JSON.parse(localStorage.getItem('monthly-habit-tracker-v1-look')||'{}');var r=document.documentElement;var m=l.mode||'auto';if(m==='auto')m=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';r.dataset.theme=l.theme||'lavender';r.dataset.pattern=l.pattern||'none';r.dataset.mode=m;}catch(e){}})();</script>
+<title>Monthly Habit Tracker – free online habit tracker and planner</title>
+<!-- Google Search Console: if you verified with an HTML tag, paste it on the next line so it is never lost when this file is replaced -->
+
+<meta name="description" content="Free monthly habit tracker in your browser. Tick off daily habits, see your consistency, log weight and mood, and get a monthly report. No sign-up.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://gingerpieexe.github.io/Habit.track/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Monthly Habit Tracker">
+<meta property="og:description" content="Free monthly habit tracker in your browser. Tick off daily habits, see your consistency, log weight and mood, and get a monthly report. No sign-up.">
+<meta property="og:url" content="https://gingerpieexe.github.io/Habit.track/">
+<meta property="og:image" content="https://gingerpieexe.github.io/Habit.track/icon-192.png">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Monthly Habit Tracker","url":"https://gingerpieexe.github.io/Habit.track/","description":"Free monthly habit tracker in your browser. Tick off daily habits, see your consistency, log weight and mood, and get a monthly report. No sign-up.","applicationCategory":"LifestyleApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 <link rel="icon" href="favicon.ico?v=2" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=2">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=2">
@@ -23,9 +35,24 @@
     --hand: 'Patrick Hand', 'Segoe Print', 'Comic Sans MS', 'Chalkboard SE', cursive;
     --title: 'Amatic SC', 'Segoe Print', 'Comic Sans MS', cursive;
   }
-  @media (prefers-color-scheme: dark) {
-    :root { --paper:#1d1b22; --ink:#ecebf0; --soft:#3a3745; --band:#2a2733; --miss:#4a2a30; }
-  }
+  :root { --pat: rgba(21,21,21,.16); color-scheme: light; }
+  /* colour themes (light) */
+  html[data-theme="cream"] { --paper:#faf5e6; --band:#f0e8cf; --soft:#e6dcc0; }
+  html[data-theme="mint"]  { --paper:#eef6f1; --band:#dcece2; --soft:#cde2d6; }
+  html[data-theme="blush"] { --paper:#fbeff1; --band:#f5dde1; --soft:#ecccd2; }
+  html[data-theme="sky"]   { --paper:#edf4fa; --band:#dbe8f4; --soft:#cbdcec; }
+  /* dark mode, tinted by the chosen theme */
+  html[data-mode="dark"] { --ink:#ecebf0; --paper:#1d1b22; --band:#2a2733; --soft:#3a3745; --pat: rgba(236,235,240,.14); color-scheme: dark; }
+  html[data-mode="dark"][data-theme="cream"] { --paper:#211e18; --band:#2e2a21; --soft:#413b2d; }
+  html[data-mode="dark"][data-theme="mint"]  { --paper:#17211d; --band:#202e28; --soft:#2f423a; }
+  html[data-mode="dark"][data-theme="blush"] { --paper:#231a1d; --band:#33262a; --soft:#4a373d; }
+  html[data-mode="dark"][data-theme="sky"]   { --paper:#151e26; --band:#1f2c38; --soft:#2e4152; }
+  /* paper patterns (page background only; the table sits on a solid sheet) */
+  html[data-pattern="dots"] body, .pat[data-p="dots"] { background-image: radial-gradient(circle, var(--pat) 1.3px, transparent 1.7px); background-size: 22px 22px; }
+  html[data-pattern="grid"] body, .pat[data-p="grid"] { background-image: linear-gradient(var(--pat) 1px, transparent 1px), linear-gradient(90deg, var(--pat) 1px, transparent 1px); background-size: 24px 24px; }
+  html[data-pattern="lines"] body, .pat[data-p="lines"] { background-image: linear-gradient(var(--pat) 1px, transparent 1px); background-size: 100% 28px; }
+  body { min-height: 100vh; }
+  .report, .notes, .picker { background: var(--paper); }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--hand); }
   body { padding: 24px 20px 40px; }
@@ -49,13 +76,14 @@
 
   .monthname { font-family: var(--title); font-size: 34px; margin: 18px 0 6px; }
 
-  .tablewrap { overflow-x: auto; border: 3px solid var(--ink); }
-  table { border-collapse: collapse; width: 100%; min-width: 980px; table-layout: fixed; }
+  /* the scroll area has spare room all round so a lifted box is never clipped */
+  .tablewrap { overflow-x: auto; padding: 18px 14px; margin: -18px -14px; }
+  table { border-collapse: collapse; width: 100%; min-width: 980px; table-layout: fixed; border: 3px solid var(--ink); background: var(--paper); }
   th, td { border: 1.5px solid var(--ink); padding: 0; text-align: center; height: 36px; }
   thead th { background: var(--band); font-weight: normal; height: 44px; }
   th small { display: block; font-size: 11px; opacity: .65; line-height: 1; }
   th.hab, td.hab { width: 230px; text-align: left; }
-  th.res, td.res { width: 112px; font-size: 14px; line-height: 1.15; }
+  th.res, td.res { width: 84px; font-size: 17px; line-height: 1.15; }
   td.hab { position: relative; background: transparent; }
   td.hab input { width: 100%; height: 100%; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 18px; padding: 0 30px 0 10px; outline: none; }
   td.hab input:focus { background: var(--band); }
@@ -67,19 +95,29 @@
   td.day { cursor: pointer; padding: 0; }
   td.day button { display: block; width: 100%; height: 100%; min-height: 35px; border: 0; background: transparent; color: var(--ink); cursor: pointer; position: relative; }
   td.day button:hover { background: var(--band); }
+  td.day.locked button, td.day.locked button:hover { cursor: not-allowed; background: transparent; }
   td.day button:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
   td.day.on button::after {
     content: ''; position: absolute; left: 50%; top: 46%; width: 8px; height: 15px;
     border-right: 3.5px solid var(--ink); border-bottom: 3.5px solid var(--ink);
     transform: translate(-50%, -55%) rotate(40deg);
-    animation: pop .14s ease-out;
   }
+  td.day.fresh.on button::after { animation: pop .14s ease-out; }
   @keyframes pop { from { transform: translate(-50%, -55%) rotate(40deg) scale(.3); } to { transform: translate(-50%, -55%) rotate(40deg) scale(1); } }
   td.day.x button::before, td.day.x button::after {
     content: ''; position: absolute; left: 50%; top: 50%; width: 3.5px; height: 18px; background: var(--heart);
     transform: translate(-50%, -50%) rotate(45deg); animation: none;
   }
   td.day.x button::after { transform: translate(-50%, -50%) rotate(-45deg); border: 0; }
+  td.day.locked.on button::after, td.day.locked.x button::before, td.day.locked.x button::after { opacity: .85; }
+  /* today's box springs out of the table on hover and the rest fades back */
+  :root { --lift: rgba(21,21,21,.38); }
+  html[data-mode="dark"] { --lift: rgba(0,0,0,.65); }
+  td.day { position: relative; transition: transform .35s cubic-bezier(.34, 1.56, .64, 1), box-shadow .25s ease, background-color .2s ease, opacity .45s ease; }
+  td.day.today:hover { transform: translate(-2px, -5px) scale(1.55); z-index: 5; background-color: var(--paper); outline: 1.5px solid var(--ink); box-shadow: 3px 4px 0 var(--lift); }
+  td.day.today button:hover { background: transparent; }
+  .tablewrap:has(td.day.today:hover) :is(td, th):not(.today) { opacity: .78; transition: opacity .45s ease .06s; }
+  thead th, td.hab, td.res { transition: opacity .45s ease; }
   td.day.skip { background-image: linear-gradient(rgba(225,29,46,.28), rgba(225,29,46,.28)); }
   td.day.skip button::before, td.day.skip button::after { background: #9d1220; }
 
@@ -130,11 +168,120 @@
   dialog input[type=file] { font: inherit; margin-bottom: 10px; max-width: 100%; }
   dialog textarea { width: 100%; font: inherit; font-size: 14px; color: var(--ink); background: transparent; border: 2px solid var(--ink); padding: 8px; }
   .dlgbtns { display: flex; gap: 8px; margin-top: 12px; }
+
+  /* ---- icon buttons that expand to show their label on hover / focus ---- */
+  .ibtn { display: inline-flex; align-items: center; height: 42px; min-width: 42px; justify-content: center; border: 2px solid var(--ink); background: var(--paper); color: var(--ink); font: inherit; font-size: 16px; padding: 0 9px; cursor: pointer; border-radius: 999px; overflow: hidden; transition: background .2s, color .2s, transform .15s; }
+  .ibtn svg { width: 22px; height: 22px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .35s cubic-bezier(.3,1.6,.5,1); }
+  .ibtn .dot { width: 18px; height: 18px; border: 1.5px solid var(--ink); flex: none; border-radius: 50%; }
+  .ibtn .lbl { max-width: 0; opacity: 0; white-space: nowrap; margin-left: 0; transition: max-width .35s ease, opacity .2s ease .06s, margin .35s ease; }
+  .ibtn:hover .lbl, .ibtn:focus-visible .lbl { max-width: 220px; opacity: 1; margin-left: 8px; }
+  .ibtn:hover, .ibtn:focus-visible { background: var(--ink); color: var(--paper); }
+  .ibtn:hover svg, .ibtn:focus-visible svg { transform: rotate(-10deg) scale(1.15); }
+  .ibtn:active { transform: scale(.93); }
+  .ibtn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .ibtn.static { cursor: default; }
+  .ibtn.static:hover, .ibtn.static:focus-visible { background: var(--paper); color: var(--ink); }
+  .ibtn.static:active { transform: none; }
+  /* the rule note: one line, fixed height, so nothing jumps while it opens */
+  .ibtn.info:hover .lbl, .ibtn.info:focus-visible .lbl { max-width: 560px; }
+  @media (max-width: 640px), (hover: none) {
+    .slot.left { width: auto; height: auto; }
+    .slot.left > .ibtn { position: static; }
+    .ibtn.info { height: auto; border-radius: 18px; padding: 6px 10px; }
+    .ibtn.info .lbl { max-width: none; opacity: 1; margin-left: 8px; white-space: normal; line-height: 1.25; transition: none; }
+  }
+  .lb { display: flex; align-items: center; gap: 8px; }
+  .lb svg, .report h2 svg { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .report h2 { display: flex; align-items: center; gap: 8px; }
+  .foot .slot { margin-top: 8px; }
+  .slot { position: relative; width: 42px; height: 42px; flex: none; }
+  .slot > .ibtn { position: absolute; right: 0; top: 0; z-index: 1; }
+  .slot.left > .ibtn { left: 0; right: auto; }
+  .slot > .ibtn:hover, .slot > .ibtn:focus-visible { z-index: 6; }
+
+  /* ---- gentle motion ---- */
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .sheet > * { animation: rise .55s ease backwards; }
+  .sheet > *:nth-child(2) { animation-delay: .06s; } .sheet > *:nth-child(3) { animation-delay: .1s; }
+  .sheet > *:nth-child(4) { animation-delay: .14s; } .sheet > *:nth-child(5) { animation-delay: .18s; }
+  .sheet > *:nth-child(6) { animation-delay: .22s; } .sheet > *:nth-child(7) { animation-delay: .26s; }
+  @keyframes pgf { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
+  @keyframes pgb { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+  #grid.pgf { animation: pgf .38s ease; } #grid.pgb { animation: pgb .38s ease; }
+  @keyframes xa { from { transform: translate(-50%, -50%) rotate(45deg) scale(.2); } to { transform: translate(-50%, -50%) rotate(45deg) scale(1); } }
+  @keyframes xb { from { transform: translate(-50%, -50%) rotate(-45deg) scale(.2); } to { transform: translate(-50%, -50%) rotate(-45deg) scale(1); } }
+  td.day.fresh.x button::before { animation: xa .2s ease-out; }
+  td.day.fresh.x button::after { animation: xb .2s .05s ease-out backwards; }
+  @keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+  .doodle { transition: transform .3s; } .doodle:hover { animation: wiggle .6s ease; }
+  .months button { transition: background .2s, color .2s; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  .btns { position: relative; }
+  .addrow { position: relative; z-index: 20; }   /* keep the open panel above the sections below */
+  .lookpanel { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; width: min(290px, 90vw); background: var(--paper); color: var(--ink); border: 2px solid var(--ink); border-radius: 16px; padding: 12px 14px 14px; box-shadow: 0 10px 28px rgba(0,0,0,.2);
+    visibility: hidden; opacity: 0; transform: translateY(-10px); transform-origin: top right;
+    clip-path: inset(0 -30px 100% -30px round 16px);
+    transition: clip-path .35s ease, opacity .25s ease, transform .35s ease, visibility 0s linear .35s; }
+  .lookpanel.open { visibility: visible; opacity: 1; transform: none; clip-path: inset(-10px -30px -40px -30px round 16px);
+    transition: clip-path .35s ease, opacity .25s ease, transform .35s ease, visibility 0s; }
+  @keyframes panelIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } to { opacity: 1; transform: none; } }
+  .lookpanel h3 { margin: 12px 0 7px; font-size: 14px; font-weight: normal; opacity: .7; }
+  .lookpanel h3:first-child { margin-top: 0; }
+  .lookpanel .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .sw { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--ink); background: var(--sw); cursor: pointer; padding: 0; }
+  .pat { width: 44px; height: 44px; border-radius: 10px; border: 2px solid var(--ink); background-color: var(--paper); cursor: pointer; padding: 0; }
+  .pat[data-p="dots"] { background-size: 11px 11px; } .pat[data-p="grid"] { background-size: 12px 12px; } .pat[data-p="lines"] { background-size: 100% 10px; }
+  .pat[data-p="none"] { background-image: linear-gradient(135deg, transparent 46%, var(--ink) 46%, var(--ink) 54%, transparent 54%); }
+  .sw[aria-pressed="true"], .pat[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--ink); }
+  .modeb { width: 52px; height: 38px; border-radius: 999px; border: 2px solid var(--ink); background: transparent; color: var(--ink); display: grid; place-items: center; cursor: pointer; padding: 0; transition: background .2s, color .2s; }
+  .modeb svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .modeb[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .sw:focus-visible, .pat:focus-visible, .modeb:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .daily .wrow { display: flex; gap: 8px; align-items: flex-end; }
+  .daily select { font: inherit; font-size: 17px; color: var(--ink); background: transparent; border: 0; border-bottom: 1.5px solid var(--ink); padding: 3px 2px; }
+  .daily select option { background: var(--paper); color: var(--ink); }
+  .daily input[type=number] { -moz-appearance: textfield; }
+  .mrow { margin-top: 12px; font-size: 16px; }
+  .moods { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .moodb { width: 46px; height: 46px; border-radius: 50%; border: 2px solid var(--ink); background: transparent; color: var(--ink); display: grid; place-items: center; cursor: pointer; padding: 0; transition: background .2s, color .2s, transform .15s; }
+  .moodb svg { width: 30px; height: 30px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .moodb:hover { background: var(--band); transform: translateY(-2px); }
+  .moodb[aria-pressed="true"] { background: var(--ink); color: var(--paper); transform: scale(1.06); }
+  .moodb:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .dailyhint { margin: 12px 0 0; font-size: 14px; opacity: .6; }
+  dialog[open] { animation: panelIn .22s ease-out; }
+  dialog.repdlg { max-width: 560px; width: 94%; max-height: 90vh; padding: 0; overflow: auto; }
+  .repin { padding: 16px 20px 20px; }
+  .rephead { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .rephead h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 22px; }
+  .rephead h2 svg, .repsec h3 svg { width: 22px; height: 22px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .repsec { border-top: 1.5px solid var(--ink); padding: 12px 0 4px; }
+  .repsec h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 17px; font-weight: normal; }
+  .repbig { font-family: var(--title); font-size: 78px; line-height: .9; }
+  .repbig small { font-size: 36px; }
+  .repsub { font-size: 15px; opacity: .7; margin-top: 4px; }
+  .hrow { display: grid; grid-template-columns: minmax(80px, 1.2fr) 2fr 44px; gap: 10px; align-items: center; margin: 7px 0; font-size: 16px; }
+  .hrow .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar { height: 12px; border: 1.5px solid var(--ink); border-radius: 999px; overflow: hidden; background: var(--band); }
+  .bar i { display: block; height: 100%; width: var(--w); background: var(--ink); }
+  .hrow .pc { text-align: right; }
+  .repdlg input[type=text] { width: 100%; font: inherit; font-size: 17px; color: var(--ink); background: transparent; border: 0; border-bottom: 1.5px solid var(--ink); padding: 3px 0; outline: none; }
+  .repdlg input[type=text]:focus { background: var(--band); }
+  .repdlg label { display: block; font-size: 15px; margin: 8px 0 2px; opacity: .8; }
+  .mooddist { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; }
+  .mooddist span { display: inline-flex; align-items: center; gap: 4px; font-size: 16px; }
+  .mooddist svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .none { opacity: .6; font-size: 16px; }
+  .thb { display: block; width: 100%; text-align: left; font: inherit; font-size: 17px; color: var(--ink); background: transparent; border: 2px solid var(--ink); border-radius: 12px; padding: 8px 12px; margin: 0 0 8px; cursor: pointer; transition: background .2s, color .2s; }
+  .thb:last-child { margin-bottom: 0; }
+  .thb:hover { background: var(--band); }
+  .thb[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .thb:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
   .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 8px 16px; font-size: 16px; opacity: 0; pointer-events: none; transition: opacity .2s; }
   .toast.show { opacity: 1; }
 
   @media print {
-    body { padding: 0; } dialog, .btns, .del, .addrow .hint, .yearbar button { display: none !important; }
+    body { padding: 0; background-image: none !important; } dialog, .ibtn.info, .slot.left, .btns, .del, .addrow .hint, .yearbar button { display: none !important; }
     .tablewrap { overflow: visible; } table { min-width: 0; }
     @page { size: landscape; margin: 10mm; }
   }
@@ -142,6 +289,34 @@
 </style>
 </head>
 <body>
+<noscript><p style="padding:16px;font-family:sans-serif">Monthly Habit Tracker: a free monthly habit tracker. Please turn on JavaScript to tick off habits, track your consistency and see your monthly report.</p></noscript>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-eraser" viewBox="0 0 24 24"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a9 9 0 0 1 0 14"/></symbol>
+  <symbol id="i-mute" viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="m22 9-6 6M16 9l6 6"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+  <symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></symbol>
+  <symbol id="i-percent" viewBox="0 0 24 24"><path d="m19 5-14 14"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></symbol>
+  <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></symbol>
+  <symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></symbol>
+  <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="m-1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 10.5h.01M15 10.5h.01"/><path d="M7.5 7.2l3 1.2M16.5 7.2l-3 1.2"/><path d="M8 17.5c1-2 2.4-3 4-3s3 1 4 3"/></symbol>
+  <symbol id="m-2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 9.5h.01M15 9.5h.01"/><path d="M8.5 16.5c1-1.3 2-1.8 3.5-1.8s2.5.5 3.5 1.8"/></symbol>
+  <symbol id="m-3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 9.5h.01M15 9.5h.01"/><path d="M9 15.5h6"/></symbol>
+  <symbol id="m-4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 9.5h.01M15 9.5h.01"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></symbol>
+  <symbol id="m-5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 9h.01M15 9h.01"/><path d="M7.5 13.5h9a4.5 4.5 0 0 1-9 0Z"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+</defs></svg>
 <div class="sheet">
   <header>
     <div class="heading">
@@ -173,27 +348,64 @@
   </div>
 
   <div class="addrow">
-    <span class="hint">Click a box: ✓ done, click again: ✗ missed, again: blank. Click a habit name to rename it.</span>
+    <span class="hint">Click a box: ✓ done, click again: ✗ missed, again: blank. Click a habit name to rename it. Only today can be edited.</span>
     <div class="btns">
-      <button class="btn" id="addHabit">+ Add habit</button>
-      <button class="btn" id="clearMonth">Clear this month's marks</button>
-      <button class="btn" id="soundBtn" aria-pressed="true">Sound: on</button>
-      <button class="btn" id="exportBtn">Export backup</button>
-      <button class="btn" id="importBtn">Import data</button>
-      <button class="btn" id="printBtn">Print</button>
+      <span class="slot"><button class="ibtn" id="addHabit" title="Add habit" aria-label="Add habit"><svg aria-hidden="true"><use href="#i-plus"/></svg><span class="lbl">Add habit</span></button></span>
+      <span class="slot"><button class="ibtn" id="reportBtn" title="Monthly report" aria-label="Monthly report"><svg aria-hidden="true"><use href="#i-clipboard"/></svg><span class="lbl">Monthly report</span></button></span>
+      <span class="slot"><button class="ibtn" id="clearMonth" title="Clear this month's marks" aria-label="Clear this month's marks"><svg aria-hidden="true"><use href="#i-eraser"/></svg><span class="lbl">Clear month</span></button></span>
+      <span class="slot"><button class="ibtn" id="lookBtn" title="Background" aria-label="Background" aria-haspopup="dialog" aria-expanded="false"><svg aria-hidden="true"><use href="#i-palette"/></svg><span class="lbl">Background</span></button></span>
+      <span class="slot"><button class="ibtn" id="soundBtn" title="Sound on" aria-label="Toggle sound" aria-pressed="true"><svg aria-hidden="true"><use href="#i-volume"/></svg><span class="lbl">Sound on</span></button></span>
+      <span class="slot"><button class="ibtn" id="themeBtn" title="Sound theme" aria-label="Sound theme" aria-haspopup="dialog" aria-expanded="false"><svg aria-hidden="true"><use href="#i-music"/></svg><span class="lbl">Sound theme</span></button></span>
+      <span class="slot"><button class="ibtn" id="exportBtn" title="Export backup" aria-label="Export backup"><svg aria-hidden="true"><use href="#i-download"/></svg><span class="lbl">Export backup</span></button></span>
+      <span class="slot"><button class="ibtn" id="importBtn" title="Import data" aria-label="Import data"><svg aria-hidden="true"><use href="#i-upload"/></svg><span class="lbl">Import data</span></button></span>
+      <span class="slot"><button class="ibtn" id="printBtn" title="Print" aria-label="Print"><svg aria-hidden="true"><use href="#i-printer"/></svg><span class="lbl">Print</span></button></span>
+      <div class="lookpanel" id="soundPanel" role="dialog" aria-label="Sound theme" aria-hidden="true">
+        <h3>Sound theme</h3>
+        <button class="thb" data-s="desk" aria-pressed="false">Pencil on a desk</button>
+        <button class="thb" data-s="kalimba" aria-pressed="false">Kalimba</button>
+      </div>
+      <div class="lookpanel" id="lookPanel" role="dialog" aria-label="Background" aria-hidden="true">
+        <h3>Colour</h3>
+        <div class="row">
+          <button class="sw" data-t="lavender" style="--sw:#cfc8e0" title="Lavender" aria-label="Lavender" aria-pressed="false"></button>
+          <button class="sw" data-t="cream" style="--sw:#efe0b0" title="Cream" aria-label="Cream" aria-pressed="false"></button>
+          <button class="sw" data-t="mint" style="--sw:#b9dcc6" title="Mint" aria-label="Mint" aria-pressed="false"></button>
+          <button class="sw" data-t="blush" style="--sw:#f2c3cb" title="Blush" aria-label="Blush" aria-pressed="false"></button>
+          <button class="sw" data-t="sky" style="--sw:#bcd6ee" title="Sky" aria-label="Sky" aria-pressed="false"></button>
+        </div>
+        <h3>Pattern</h3>
+        <div class="row">
+          <button class="pat" data-p="none" title="Plain" aria-label="Plain" aria-pressed="false"></button>
+          <button class="pat" data-p="dots" title="Dots" aria-label="Dots" aria-pressed="false"></button>
+          <button class="pat" data-p="grid" title="Grid" aria-label="Grid" aria-pressed="false"></button>
+          <button class="pat" data-p="lines" title="Lines" aria-label="Lines" aria-pressed="false"></button>
+        </div>
+        <h3>Mode</h3>
+        <div class="row">
+          <button class="modeb" data-m="light" title="Light" aria-label="Light" aria-pressed="false"><svg aria-hidden="true"><use href="#i-sun"/></svg></button>
+          <button class="modeb" data-m="dark" title="Dark" aria-label="Dark" aria-pressed="false"><svg aria-hidden="true"><use href="#i-moon"/></svg></button>
+          <button class="modeb" data-m="auto" title="Match my device" aria-label="Match my device" aria-pressed="false"><svg aria-hidden="true"><use href="#i-monitor"/></svg></button>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="lower">
-    <section class="report">
-      <h2>Monthly Report</h2>
-      <label>Biggest win:<input id="rWin" type="text"></label>
-      <label>Consistency:
-        <div class="pct"><span id="rCons">0</span>%</div>
+    <section class="report daily" id="dailyCard" aria-label="Today's check-in">
+      <h2><svg aria-hidden="true"><use href="#i-sun"/></svg><span id="dailyDate">Today</span></h2>
+      <label><span class="lb"><svg aria-hidden="true"><use href="#i-scale"/></svg>Weight</span>
+        <div class="wrow"><input id="dWeight" type="number" inputmode="decimal" step="0.1" min="0" placeholder="0.0"><select id="dUnit" aria-label="Unit"><option value="kg">kg</option><option value="lb">lb</option></select></div>
       </label>
-      <label>Habit that needs simplification:<input id="rSimplify" type="text"></label>
-      <label>Weight check:<input id="rWeight" type="text"></label>
-      <label>How do you feel compared to last month?<textarea id="rFeel" rows="2"></textarea></label>
+      <div class="mrow"><span class="lb"><svg aria-hidden="true"><use href="#i-smile"/></svg>Mood</span>
+        <div class="moods" role="group" aria-label="Mood">
+          <button class="moodb" data-v="1" title="Awful" aria-label="Awful" aria-pressed="false"><svg aria-hidden="true"><use href="#m-1"/></svg></button>
+          <button class="moodb" data-v="2" title="Low" aria-label="Low" aria-pressed="false"><svg aria-hidden="true"><use href="#m-2"/></svg></button>
+          <button class="moodb" data-v="3" title="Okay" aria-label="Okay" aria-pressed="false"><svg aria-hidden="true"><use href="#m-3"/></svg></button>
+          <button class="moodb" data-v="4" title="Good" aria-label="Good" aria-pressed="false"><svg aria-hidden="true"><use href="#m-4"/></svg></button>
+          <button class="moodb" data-v="5" title="Great" aria-label="Great" aria-pressed="false"><svg aria-hidden="true"><use href="#m-5"/></svg></button>
+        </div>
+      </div>
+      <p class="dailyhint">Starts fresh every day.</p>
     </section>
     <section class="notes">
       <textarea id="notes" placeholder="Notes for this month…" aria-label="Notes for this month"></textarea>
@@ -203,7 +415,7 @@
   <div class="foot">
     <div>
       <strong>Weak Attempt is Better Than No Attempt.</strong>
-      <div class="rule">“Don't Skip 2 Days in a Row” — a red tint marks a second ✗ in a row.</div>
+      <span class="slot left"><span class="ibtn info static" tabindex="0" role="note" aria-label="Rule"><svg aria-hidden="true"><use href="#i-info"/></svg><span class="lbl">“Don't Skip 2 Days in a Row” — a red tint marks a second ✗ in a row.</span></span></span>
     </div>
     <svg class="doodle" viewBox="0 0 120 130" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M60 14 C48 4 34 14 44 26 L60 40 L76 26 C86 14 72 4 60 14Z" fill="#e11d2e" stroke="#151515"/>
@@ -218,6 +430,13 @@
     </svg>
   </div>
 </div>
+<dialog id="reportDlg" class="repdlg" aria-label="Monthly report">
+  <div class="repin">
+    <div class="rephead"><h2><svg aria-hidden="true"><use href="#i-clipboard"/></svg><span id="repTitle">Monthly Report</span></h2>
+      <button class="ibtn" id="repClose" title="Close" aria-label="Close"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div id="repBody"></div>
+  </div>
+</dialog>
 <dialog id="importDlg">
   <h2>Import data</h2>
   <p>Choose your old tracker's <b>.html file</b> (or a .json backup) and it is read straight away. You can also paste backup data below.</p>
@@ -245,6 +464,8 @@
     months: {},
     view: { y: now.getFullYear(), m: now.getMonth() }
   };
+  state.daily = state.daily || {};
+  state.unit = state.unit || 'kg';
 
   function load() {
     try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; }
@@ -268,12 +489,13 @@
     clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 1600);
   }
 
-  // ---- soft synthesized sound effects: warm kalimba / music-box tones with a little room reverb ----
+  // ---- soft synthesized sound themes (no audio files needed) ----
   const Sound = (function () {
-    const VOLUME = 0.5;           // overall volume: 50%
-    let ctx = null, master = null, bus = null, lastType = 0, hasPan = false;
-    let enabled = true;
+    const VOLUME = 0.3;           // overall volume: 30%
+    let ctx = null, master = null, bus = null, send = null, NB = null, lastType = 0, hasPan = false;
+    let enabled = true, themeKey = 'desk';
     try { enabled = localStorage.getItem(KEY + '-sound') !== 'off'; } catch (e) {}
+    try { const tk = localStorage.getItem(KEY + '-soundtheme'); if (tk) themeKey = tk; } catch (e) {}
 
     // major pentatonic: every note sits well with every other, so nothing ever clashes
     const SCALE = [0, 2, 4, 7, 9];
@@ -281,9 +503,9 @@
     const freqOf = (deg, oct) => BASE * Math.pow(2, (SCALE[deg % 5] + 12 * (oct + Math.floor(deg / 5))) / 12);
     const r = (a, b) => a + Math.random() * (b - a);
 
-    // kalimba-like voice: a pure fundamental plus quick-fading woody overtones
     const KALIMBA = [[1, 1, 1], [4, 0.16, 0.28], [9.2, 0.04, 0.07]];
     const SOFT = [[1, 1, 1], [2, 0.45, 0.5], [4, 0.12, 0.2]];
+    const WOOD = [[1, 1, 1], [3.9, 0.4, 0.1], [9, 0.08, 0.04]];
 
     function setup() {
       if (ctx) return true;
@@ -315,21 +537,27 @@
           }
         }
         const verb = ctx.createConvolver(); verb.buffer = imp;
-        const send = ctx.createGain(); send.gain.value = 0.34;
+        send = ctx.createGain(); send.gain.value = 0.15;
         bus.connect(send); send.connect(verb); verb.connect(master);
+
+        // warm, slightly pink noise for the pencil and paper textures
+        NB = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+        const nd = NB.getChannelData(0); let last = 0;
+        for (let i = 0; i < nd.length; i++) { const w = Math.random() * 2 - 1; last = (last + 0.35 * w) / 1.35; nd[i] = last * 3.2; }
         return true;
       } catch (e) { return false; }
     }
     function ready() {
       if (!enabled || !setup()) return false;
       if (ctx.state === 'suspended') ctx.resume();
+      send.gain.setTargetAtTime(THEMES[themeKey].wet, ctx.currentTime, 0.02);
       return true;
     }
     // wake the audio engine on the very first touch/click/keypress so the first sound isn't late
     ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
       document.addEventListener(ev, () => { if (enabled) ready(); }, { capture: true, passive: true }));
 
-    // one plucked note
+    // one note (plucked, knocked or glided)
     function note(freq, o) {
       o = o || {};
       const t = ctx.currentTime + 0.005 + (o.delay || 0);
@@ -343,54 +571,124 @@
       node.connect(bus);
       (o.partials || KALIMBA).forEach(([ratio, amp, decay]) => {
         const osc = ctx.createOscillator(); osc.type = 'sine';
-        osc.frequency.value = freq * ratio * (1 + r(-0.0008, 0.0008));   // tiny natural drift
+        const base = freq * ratio * (1 + r(-0.0008, 0.0008));            // tiny natural drift
+        osc.frequency.value = base;
+        if (o.glide) {
+          osc.frequency.setValueAtTime(base * o.glide[0], t);
+          osc.frequency.exponentialRampToValueAtTime(base * o.glide[1], t + (o.glideT || 0.06));
+        }
         const g = ctx.createGain();
         const end = t + Math.max(0.05, dur * decay);
         g.gain.setValueAtTime(0.0001, t);
-        g.gain.linearRampToValueAtTime(amp, t + 0.006);                  // soft attack, no click
+        g.gain.linearRampToValueAtTime(amp, t + (o.attack || 0.006));   // soft attack, no click
         g.gain.exponentialRampToValueAtTime(0.0001, end);
         osc.connect(g); g.connect(out);
         osc.start(t); osc.stop(end + 0.05);
       });
     }
+    // one grainy pencil stroke
+    function scratch(o) {
+      const t = ctx.currentTime + 0.005 + (o.delay || 0), dur = o.dur, depth = o.depth === undefined ? 0.22 : o.depth;
+      const src = ctx.createBufferSource(); src.buffer = NB; src.loop = true;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = o.q || 0.8;
+      bp.frequency.setValueAtTime(o.f, t); bp.frequency.linearRampToValueAtTime(o.to || o.f, t + dur);
+      const gr = ctx.createGain(); gr.gain.value = 1 - depth;
+      const lfo = ctx.createOscillator(); lfo.frequency.value = o.grain || r(24, 34);
+      const ld = ctx.createGain(); ld.gain.value = depth; lfo.connect(ld); ld.connect(gr.gain);
+      const g = ctx.createGain(), v = o.vol || 1;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(v, t + dur * (o.attack || 0.4));
+      g.gain.linearRampToValueAtTime(v * 0.7, t + dur * 0.75);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(bp); bp.connect(gr); gr.connect(g); g.connect(bus);
+      src.start(t, Math.random() * 1.5); src.stop(t + dur + 0.05);
+      lfo.start(t); lfo.stop(t + dur + 0.05);
+    }
+    function click(o) {
+      const t = ctx.currentTime + 0.005 + (o.delay || 0), len = Math.floor(ctx.sampleRate * (o.dur || 0.01));
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+      const s = ctx.createBufferSource(); s.buffer = buf;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = o.f || 2500; bp.Q.value = o.q || 0.7;
+      const g = ctx.createGain(); g.gain.value = o.vol || 0.3;
+      s.connect(bp); bp.connect(g); g.connect(bus); s.start(t);
+    }
+    function crinkle(n, span, delay, vol) {
+      for (let i = 0; i < n; i++) click({ f: r(1500, 4500), q: 0.6, vol: r(0.12, 0.3) * (vol || 1), dur: r(0.006, 0.014), delay: (delay || 0) + Math.random() * span });
+    }
+    function tap(delay, vol, f) { note(f || 190, { glide: [1, 0.5], glideT: 0.07, partials: [[1, 1, 1]], dur: 0.09, vol, attack: 0.008, pan: 0, delay }); }
+    // a page turning: swish, crinkle, soft landing (sweeps the other way going back)
+    function page(dir, from, to, vol) {
+      const a = dir < 0 ? to : from, b = dir < 0 ? from : to;
+      scratch({ f: a, to: b, q: 0.5, dur: 0.4, vol: vol || 0.8, attack: 0.55, depth: 0.1, grain: 14 });
+      crinkle(6, 0.28, 0.08, 1);
+      tap(0.42, 0.25, 120);
+    }
+
+    const THEMES = {
+      desk: {
+        label: 'Pencil on a desk', wet: 0.15,
+        // tick: two wooden desk taps, then a short pencil scratch
+        tick() {
+          note(220, { partials: WOOD, dur: 0.28, vol: 0.75, attack: 0.002, pan: 0 });
+          note(262, { partials: WOOD, dur: 0.28, vol: 0.5, delay: 0.11, attack: 0.002, pan: 0 });
+          scratch({ f: 1500, to: 1900, dur: 0.15, delay: 0.2, vol: 0.8 });
+        },
+        // cross: two lower, duller taps
+        cross() {
+          note(150, { partials: WOOD, dur: 0.3, vol: 0.8, attack: 0.002, pan: 0 });
+          note(130, { partials: WOOD, dur: 0.3, vol: 0.6, delay: 0.12, attack: 0.002, pan: 0 });
+        },
+        // clear: a short eraser rub and a tap
+        erase() {
+          scratch({ f: 700, to: 950, q: 0.6, dur: 0.16, vol: 1.1, attack: 0.5 });
+          note(180, { partials: [[1, 1, 1], [3.9, 0.3, 0.1]], dur: 0.15, vol: 0.35, delay: 0.17, attack: 0.002, pan: 0 });
+        },
+        flip(dir) { page(dir, 500, 2600, 0.8); },
+        write(deleting) {
+          if (deleting) scratch({ f: r(800, 1000), q: 0.6, dur: 0.05, vol: 0.6, grain: 30 });
+          else note(r(300, 360), { partials: [[1, 1, 1], [3.9, 0.3, 0.1]], dur: 0.06, vol: 0.15, attack: 0.002 });
+        }
+      },
+      kalimba: {
+        label: 'Kalimba', wet: 0.34,
+        tick(d) {
+          const deg = ((d || 1) - 1) % 8;
+          note(freqOf(deg, 0), { dur: 1.1, vol: 0.55 });
+          note(freqOf(deg + 2, 0), { dur: 1.3, vol: 0.4, delay: 0.085 });
+        },
+        cross() { note(196, { dur: 0.45, vol: 0.7, partials: SOFT, pan: 0 }); },
+        erase() {
+          note(freqOf(4, 0), { dur: 0.5, vol: 0.3, partials: SOFT });
+          note(freqOf(2, 0), { dur: 0.6, vol: 0.28, partials: SOFT, delay: 0.09 });
+        },
+        flip(dir) {
+          const degs = dir < 0 ? [4, 3, 2, 1, 0] : [0, 1, 2, 3, 4];
+          degs.forEach((dg, i) => note(freqOf(dg, 1), { dur: 1.2, vol: 0.28 + i * 0.015, delay: i * 0.06, pan: (i - 2) * 0.12 }));
+        },
+        write(deleting) {
+          if (deleting) note(freqOf(1, 0), { dur: 0.14, vol: 0.2, partials: SOFT });
+          else note(freqOf(Math.floor(Math.random() * 5), 1), { dur: 0.16, vol: 0.2, partials: [[1, 1, 1], [4, 0.12, 0.3]] });
+        }
+      }
+    };
+    if (!THEMES[themeKey]) themeKey = 'desk';
 
     return {
       isEnabled: () => enabled,
       setEnabled(v) { enabled = v; try { localStorage.setItem(KEY + '-sound', v ? 'on' : 'off'); } catch (e) {} },
-      // tick: two rising notes, a little "done!" chime. Ticking along a row plays a gentle melody.
-      tick(d) {
-        if (!ready()) return;
-        const deg = ((d || 1) - 1) % 8;
-        note(freqOf(deg, 0), { dur: 1.1, vol: 0.55 });
-        note(freqOf(deg + 2, 0), { dur: 1.3, vol: 0.4, delay: 0.085 });
-      },
-      // cross: one low, muted wooden knock - acknowledges the miss without scolding
-      cross() {
-        if (!ready()) return;
-        note(196, { dur: 0.45, vol: 0.7, partials: SOFT, pan: 0 });
-      },
-      // clearing a box: two soft notes drifting down
-      erase() {
-        if (!ready()) return;
-        note(freqOf(4, 0), { dur: 0.5, vol: 0.3, partials: SOFT });
-        note(freqOf(2, 0), { dur: 0.6, vol: 0.28, partials: SOFT, delay: 0.09 });
-      },
-      // month / year switch: a soft chime run - upward going forward, downward going back
-      flip(dir) {
-        if (!ready()) return;
-        const degs = dir < 0 ? [4, 3, 2, 1, 0] : [0, 1, 2, 3, 4];
-        degs.forEach((dg, i) => note(freqOf(dg, 1), {
-          dur: 1.2, vol: 0.28 + i * 0.015, delay: i * 0.06, pan: (i - 2) * 0.12
-        }));
-      },
-      // writing: tiny soft wooden taps, sparse and quiet
+      themes: () => Object.keys(THEMES).map(k => ({ key: k, label: THEMES[k].label })),
+      getTheme: () => themeKey,
+      setTheme(k) { if (!THEMES[k]) return; themeKey = k; try { localStorage.setItem(KEY + '-soundtheme', k); } catch (e) {} },
+      tick(d) { if (ready()) THEMES[themeKey].tick(d); },
+      cross() { if (ready()) THEMES[themeKey].cross(); },
+      erase() { if (ready()) THEMES[themeKey].erase(); },
+      flip(dir) { if (ready()) THEMES[themeKey].flip(dir); },
       write(deleting) {
         const n = performance.now();
-        if (n - lastType < 70) return;
+        if (n - lastType < 80) return;
         lastType = n;
-        if (!ready()) return;
-        if (deleting) note(freqOf(1, 0), { dur: 0.14, vol: 0.2, partials: SOFT });
-        else note(freqOf(Math.floor(Math.random() * 5), 1), { dur: 0.16, vol: 0.2, partials: [[1, 1, 1], [4, 0.12, 0.3]] });
+        if (ready()) THEMES[themeKey].write(deleting);
       }
     };
   })();
@@ -403,6 +701,13 @@
     Sound.write(typeof e.inputType === 'string' && e.inputType.indexOf('delete') === 0);
   });
 
+  // slide the table in like a turned page
+  function pageAnim(dir) {
+    const w = $('grid');
+    w.classList.remove('pgf', 'pgb'); void w.offsetWidth;
+    w.classList.add(dir < 0 ? 'pgb' : 'pgf');
+  }
+
   function renderPicker() {
     $('yearLabel').textContent = state.view.y;
     const box = $('months'); box.innerHTML = '';
@@ -410,7 +715,7 @@
       const b = document.createElement('button');
       b.textContent = n;
       b.setAttribute('aria-pressed', i === state.view.m);
-      b.onclick = () => { if (i !== state.view.m) Sound.flip(i > state.view.m ? 1 : -1); state.view.m = i; save(); renderAll(); };
+      b.onclick = () => { if (i === state.view.m) return; const dir = i > state.view.m ? 1 : -1; Sound.flip(dir); state.view.m = i; save(); renderAll(); pageAnim(dir); };
       box.appendChild(b);
     });
     $('monthName').textContent = FULL[state.view.m] + ' ' + state.view.y;
@@ -419,9 +724,12 @@
   function renderTable() {
     const { y, m } = state.view;
     const dim = daysIn(y, m);
+    const el = elapsedDays(y, m);
+    const locked = lockedDays(y, m);
     const md = monthData();
-    const isThisMonth = (y === now.getFullYear() && m === now.getMonth());
-    const today = now.getDate();
+    const cur = new Date();
+    const isThisMonth = (y === cur.getFullYear() && m === cur.getMonth());
+    const today = cur.getDate();
     const isPast = d => (y < now.getFullYear()) || (y === now.getFullYear() && (m < now.getMonth() || (m === now.getMonth() && d < today)));
 
     const todayStart = () => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime(); };
@@ -472,23 +780,49 @@
         const b = document.createElement('button');
         b.type = 'button';
         b.setAttribute('aria-label', (hb.name || 'Habit') + ', day ' + d + ': ' + (on ? 'done' : x ? 'missed' : 'not marked'));
-        b.onclick = () => toggle(hb.id, d);
+        if (!canEdit(y, m, d)) {
+          td.classList.add('locked');
+          b.disabled = true;
+          b.title = d <= locked ? 'Locked: this day has passed' : 'Not open yet: you can only edit today';
+        } else {
+          b.onclick = () => toggle(hb.id, d);
+        }
         td.appendChild(b); tr.appendChild(td);
       }
       const res = document.createElement('td'); res.className = 'res';
-      res.innerHTML = resultHTML(ticks.size, crosses.size);
+      const done = [...ticks].filter(d => d <= el).length;
+      res.innerHTML = el ? '<b>' + Math.round(done / el * 100) + '%</b>' : '–';
+      res.title = el ? done + ' of ' + el + ' days' : 'Not started yet';
       tr.appendChild(res);
       body.appendChild(tr);
     });
     updateReport();
   }
 
-  function resultHTML(t, c) {
-    const pct = (t + c) ? Math.round(t / (t + c) * 100) : 0;
-    return `<b>${t}✓ ${c}✗</b><br>${(t + c) ? pct + '%' : '–'}`;
+  // only today can be edited: past days are permanent, upcoming days are not open yet
+  function canEdit(y, m, d) {
+    const t = new Date();
+    return y === t.getFullYear() && m === t.getMonth() && d === t.getDate();
+  }
+
+  // days that have passed are locked: all of a past month, days before today this month, none in a future month
+  function lockedDays(y, m) {
+    const t = new Date(), dim = daysIn(y, m);
+    if (y < t.getFullYear() || (y === t.getFullYear() && m < t.getMonth())) return dim;
+    if (y === t.getFullYear() && m === t.getMonth()) return t.getDate() - 1;
+    return 0;
+  }
+
+  // days that count for a month: all of a past month, up to today for this month, none for a future month
+  function elapsedDays(y, m) {
+    const t = new Date(), dim = daysIn(y, m);
+    if (y < t.getFullYear() || (y === t.getFullYear() && m < t.getMonth())) return dim;
+    if (y === t.getFullYear() && m === t.getMonth()) return t.getDate();
+    return 0;
   }
 
   function toggle(id, d) {
+    if (!canEdit(state.view.y, state.view.m, d)) return;   // only today can be changed
     const md = monthData();
     const t = new Set(md.ticks[id] || []);
     const c = new Set(md.crosses[id] || []);
@@ -499,50 +833,209 @@
     md.ticks[id] = [...t].sort((a, b) => a - b);
     md.crosses[id] = [...c].sort((a, b) => a - b);
     save();
-    // keep scroll position while re-rendering
-    const wrap = document.querySelector('.tablewrap'); const sx = wrap.scrollLeft;
-    renderTable(); wrap.scrollLeft = sx;
+
+    // update only the touched row, in place: the hovered box keeps its lift and nothing else re-animates
+    const tr = document.querySelector('#tbody tr[data-id="' + id + '"]');
+    if (!tr) { renderTable(); return; }
+    const y = state.view.y, m = state.view.m, dim = daysIn(y, m), el = elapsedDays(y, m);
+    const hb = state.habits.find(h => h.id === id);
+    for (let k = 1; k <= dim; k++) {
+      const td = tr.cells[k]; if (!td || !td.classList.contains('day')) continue;
+      const on = t.has(k), x = c.has(k);
+      td.classList.toggle('on', on); td.classList.toggle('x', x);
+      td.classList.toggle('skip', x && k > 1 && c.has(k - 1));
+      if (k === d) td.classList.add('fresh');
+      const b = td.firstElementChild;
+      if (b) b.setAttribute('aria-label', ((hb && hb.name) || 'Habit') + ', day ' + k + ': ' + (on ? 'done' : x ? 'missed' : 'not marked'));
+    }
+    const res = tr.cells[32];
+    if (res) {
+      const done = [...t].filter(v => v <= el).length;
+      res.innerHTML = el ? '<b>' + Math.round(done / el * 100) + '%</b>' : '–';
+      res.title = el ? done + ' of ' + el + ' days' : 'Not started yet';
+    }
+    updateReport();
   }
 
-  function updateReport() {
-    const md = monthData();
-    let t = 0, c = 0;
-    state.habits.filter(h => h.name.trim()).forEach(h => {
-      t += (md.ticks[h.id] || []).length;
-      c += (md.crosses[h.id] || []).length;
-    });
-    const pct = (t + c) ? Math.round(t / (t + c) * 100) : 0;
-    $('rCons').textContent = pct;
+  // ---- daily check-in (weight + mood): one entry per calendar day, blank again each new day ----
+  const pad = n => String(n).padStart(2, '0');
+  const keyOf = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  let shownKey = '';
+  function dayEntry() { const k = keyOf(new Date()); return state.daily[k] || (state.daily[k] = {}); }
+  function renderDaily() {
+    const t = new Date(), e = state.daily[keyOf(t)] || {};
+    shownKey = keyOf(t);
+    $('dailyDate').textContent = t.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' });
+    $('dWeight').value = e.weight || '';
+    $('dUnit').value = e.unit || state.unit || 'kg';
+    document.querySelectorAll('.moodb').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.v === e.mood)));
   }
+  $('dWeight').addEventListener('input', e => { const en = dayEntry(); en.weight = e.target.value; en.unit = $('dUnit').value; save(); });
+  $('dUnit').addEventListener('change', () => { const en = dayEntry(); en.unit = $('dUnit').value; state.unit = en.unit; save(); });
+  document.querySelectorAll('.moodb').forEach(b => b.addEventListener('click', () => {
+    const en = dayEntry(), v = +b.dataset.v;
+    en.mood = en.mood === v ? 0 : v; save(); renderDaily();
+    if (en.mood) Sound.tick(v * 2);
+  }));
+  setInterval(() => { if (keyOf(new Date()) !== shownKey) { renderDaily(); renderTable(); } }, 30000);
+
+  // ---- monthly report (opens from its button) ----
+  const repDlg = $('reportDlg');
+  const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const MOOD_NAMES = ['', 'Awful', 'Low', 'Okay', 'Good', 'Great'];
+  const moodSvg = n => '<svg aria-hidden="true"><use href="#m-' + n + '"/></svg>';
+  const ico = id => '<svg aria-hidden="true"><use href="#i-' + id + '"/></svg>';
+  function monthEntries(y, m) {
+    const pre = y + '-' + pad(m + 1) + '-';
+    return Object.keys(state.daily).filter(k => k.indexOf(pre) === 0).sort().map(k => state.daily[k]);
+  }
+  function renderReportDlg() {
+    const y = state.view.y, m = state.view.m, md = monthData(), el = elapsedDays(y, m);
+    $('repTitle').textContent = 'Monthly Report · ' + FULL[m] + ' ' + y;
+
+    const rows = state.habits.filter(h => h.name.trim()).map(h => {
+      const done = (md.ticks[h.id] || []).filter(d => d <= el).length;
+      return { name: h.name.trim(), done, pct: el ? Math.round(done / el * 100) : null };
+    });
+    const tot = rows.reduce((a, r) => a + r.done, 0), poss = rows.length * el;
+    const pct = poss ? Math.round(tot / poss * 100) : null;
+    const best = rows.length && el ? rows.reduce((a, r) => r.pct > a.pct ? r : a) : null;
+    const low = rows.length && el ? rows.reduce((a, r) => r.pct < a.pct ? r : a) : null;
+
+    let h = '<div class="repsec" style="border-top:0"><h3>' + ico('percent') + 'Consistency</h3>' +
+      '<div class="repbig">' + (pct === null ? '–' : pct + '<small>%</small>') + '</div>' +
+      '<div class="repsub">' + (poss ? tot + ' of ' + poss + ' habit-days completed over ' + el + ' day' + (el === 1 ? '' : 's') : 'No days to count yet') + '</div>';
+    rows.forEach(r => {
+      h += '<div class="hrow"><span class="nm" title="' + esc(r.name) + '">' + esc(r.name) + '</span><div class="bar"><i style="--w:' + (r.pct || 0) + '%"></i></div><span class="pc">' + (r.pct === null ? '–' : r.pct + '%') + '</span></div>';
+    });
+    h += '</div>';
+
+    h += '<div class="repsec"><h3>' + ico('trophy') + 'Biggest win</h3><input type="text" id="repWin" value="' + esc(md.report.win || '') + '" placeholder="' + esc(best ? 'Strongest habit: ' + best.name + ' (' + best.pct + '%)' : 'Write your biggest win') + '">' +
+      '<label for="repSimp" style="margin-top:12px"><span style="display:inline-flex;align-items:center;gap:8px">' + ico('sparkles').replace('<svg', '<svg style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"') + 'Habit that needs simplifying</span></label>' +
+      '<input type="text" id="repSimp" value="' + esc(md.report.simplify || '') + '" placeholder="' + esc(low && rows.length > 1 ? 'Lowest so far: ' + low.name + ' (' + low.pct + '%)' : 'Which habit felt too hard?') + '"></div>';
+
+    // weight
+    const ents = monthEntries(y, m);
+    const ws = ents.map(e => ({ v: parseFloat(e.weight), u: e.unit || 'kg' })).filter(e => isFinite(e.v) && e.v > 0);
+    h += '<div class="repsec"><h3>' + ico('scale') + 'Weight check</h3>';
+    if (ws.length) {
+      const u = ws[ws.length - 1].u;
+      const conv = e => e.u === u ? e.v : (u === 'kg' ? e.v / 2.20462 : e.v * 2.20462);
+      const first = conv(ws[0]), last = conv(ws[ws.length - 1]), diff = last - first;
+      h += '<div>' + first.toFixed(1) + ' → ' + last.toFixed(1) + ' ' + u + (ws.length > 1 ? ' (' + (diff > 0 ? '+' : diff < 0 ? '−' : '') + Math.abs(diff).toFixed(1) + ' ' + u + ')' : '') + '</div>' +
+           '<div class="repsub">' + ws.length + ' day' + (ws.length === 1 ? '' : 's') + ' logged</div>';
+    } else h += '<div class="none">No weight logged this month.</div>';
+    h += '</div>';
+
+    // mood
+    const moods = ents.map(e => e.mood).filter(v => v >= 1 && v <= 5);
+    h += '<div class="repsec"><h3>' + ico('smile') + 'Mood</h3>';
+    if (moods.length) {
+      const avg = moods.reduce((a, b) => a + b, 0) / moods.length;
+      const face = Math.min(5, Math.max(1, Math.round(avg)));
+      let line = '<div style="display:flex;align-items:center;gap:8px"><span class="mooddist">' + '<span>' + moodSvg(face) + MOOD_NAMES[face] + ' on average</span></span></div>';
+      const pm = m === 0 ? 11 : m - 1, py = m === 0 ? y - 1 : y;
+      const pms = monthEntries(py, pm).map(e => e.mood).filter(v => v >= 1 && v <= 5);
+      if (pms.length) {
+        const d = avg - pms.reduce((a, b) => a + b, 0) / pms.length;
+        line += '<div class="repsub">' + (d > 0.3 ? 'Better than last month' : d < -0.3 ? 'Lower than last month' : 'About the same as last month') + '</div>';
+      }
+      const counts = [0, 0, 0, 0, 0, 0]; moods.forEach(v => counts[v]++);
+      line += '<div class="mooddist">' + [1, 2, 3, 4, 5].map(n => '<span title="' + MOOD_NAMES[n] + '">' + moodSvg(n) + counts[n] + '</span>').join('') + '</div>';
+      h += line;
+    } else h += '<div class="none">No mood logged this month.</div>';
+    h += '</div>';
+
+    $('repBody').innerHTML = h;
+    $('repWin').addEventListener('input', e => { monthData().report.win = e.target.value; save(); });
+    $('repSimp').addEventListener('input', e => { monthData().report.simplify = e.target.value; save(); });
+  }
+  $('reportBtn').onclick = () => { renderReportDlg(); repDlg.showModal(); Sound.flip(1); };
+  $('repClose').onclick = () => repDlg.close();
+  repDlg.addEventListener('click', e => { if (e.target === repDlg) repDlg.close(); });
+  function updateReport() { if (repDlg.open) renderReportDlg(); }
 
   function renderReport() {
-    const md = monthData();
-    $('rWin').value = md.report.win;
-    $('rSimplify').value = md.report.simplify;
-    $('rWeight').value = md.report.weight;
-    $('rFeel').value = md.report.feel;
-    $('notes').value = md.notes;
+    $('notes').value = monthData().notes;
+    renderDaily();
   }
 
-  [['rWin','win'],['rSimplify','simplify'],['rWeight','weight'],['rFeel','feel']].forEach(([id, f]) => {
-    $(id).addEventListener('input', e => { monthData().report[f] = e.target.value; save(); });
-  });
   $('notes').addEventListener('input', e => { monthData().notes = e.target.value; save(); });
 
-  $('prevYear').onclick = () => { Sound.flip(-1); state.view.y--; save(); renderAll(); };
-  $('nextYear').onclick = () => { Sound.flip(1); state.view.y++; save(); renderAll(); };
+  $('prevYear').onclick = () => { Sound.flip(-1); state.view.y--; save(); renderAll(); pageAnim(-1); };
+  $('nextYear').onclick = () => { Sound.flip(1); state.view.y++; save(); renderAll(); pageAnim(1); };
   $('addHabit').onclick = () => {
     state.habits.push({ id: uid(), name: '' }); save(); renderTable();
     const inputs = document.querySelectorAll('td.hab input'); inputs[inputs.length - 1].focus();
   };
   $('clearMonth').onclick = () => {
-    if (!confirm('Clear all marks for ' + FULL[state.view.m] + ' ' + state.view.y + '?')) return;
-    monthData().ticks = {}; monthData().crosses = {}; save(); renderTable(); toast('Marks cleared');
+    const y = state.view.y, m = state.view.m, lock = lockedDays(y, m), md = monthData();
+    if (lock >= daysIn(y, m)) { toast('Past months are locked'); return; }
+    const msg = lock > 0 ? 'Clear the marks for today and the days after? Days that have passed stay locked.' : 'Clear all marks for ' + FULL[m] + ' ' + y + '?';
+    if (!confirm(msg)) return;
+    [md.ticks, md.crosses].forEach(o => Object.keys(o).forEach(id => { o[id] = (o[id] || []).filter(d => d <= lock); }));
+    save(); renderTable(); toast('Marks cleared');
   };
   $('printBtn').onclick = () => window.print();
+  // ---- background: colour theme, paper pattern, light / dark ----
+  const LOOK_KEY = KEY + '-look';
+  let look = { theme: 'lavender', pattern: 'none', mode: 'auto' };
+  try { Object.assign(look, JSON.parse(localStorage.getItem(LOOK_KEY) || '{}')); } catch (e) {}
+  const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  const panel = $('lookPanel'), lookBtn = $('lookBtn');
+  function applyLook() {
+    const root = document.documentElement;
+    const eff = look.mode === 'auto' ? (mq && mq.matches ? 'dark' : 'light') : look.mode;
+    root.dataset.theme = look.theme; root.dataset.pattern = look.pattern; root.dataset.mode = eff;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = getComputedStyle(root).getPropertyValue('--paper').trim() || '#f3f1f6';
+    panel.querySelectorAll('[data-t]').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === look.theme));
+    panel.querySelectorAll('[data-p]').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === look.pattern));
+    panel.querySelectorAll('[data-m]').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === look.mode));
+  }
+  function closePanel() { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true'); lookBtn.setAttribute('aria-expanded', 'false'); }
+  lookBtn.onclick = () => {
+    const open = !panel.classList.contains('open');
+    if (open) closeSPanel();
+    panel.classList.toggle('open', open); panel.setAttribute('aria-hidden', String(!open)); lookBtn.setAttribute('aria-expanded', String(open));
+  };
+  panel.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.t) look.theme = b.dataset.t;
+    else if (b.dataset.p) look.pattern = b.dataset.p;
+    else if (b.dataset.m) look.mode = b.dataset.m;
+    else return;
+    try { localStorage.setItem(LOOK_KEY, JSON.stringify(look)); } catch (err) {}
+    applyLook(); Sound.write(false);
+  });
+  document.addEventListener('click', e => { if (panel.classList.contains('open') && !e.target.closest('#lookPanel, #lookBtn')) closePanel(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && panel.classList.contains('open')) { closePanel(); lookBtn.focus(); } });
+  if (mq) (mq.addEventListener ? mq.addEventListener('change', () => { if (look.mode === 'auto') applyLook(); }) : mq.addListener(() => { if (look.mode === 'auto') applyLook(); }));
+  applyLook();
+
+  // ---- sound theme picker ----
+  const sPanel = $('soundPanel'), themeBtn = $('themeBtn');
+  function markThemes() { sPanel.querySelectorAll('[data-s]').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === Sound.getTheme())); }
+  function closeSPanel() { sPanel.classList.remove('open'); sPanel.setAttribute('aria-hidden', 'true'); themeBtn.setAttribute('aria-expanded', 'false'); }
+  themeBtn.onclick = () => {
+    const open = !sPanel.classList.contains('open');
+    if (open) closePanel();
+    sPanel.classList.toggle('open', open); sPanel.setAttribute('aria-hidden', String(!open)); themeBtn.setAttribute('aria-expanded', String(open));
+  };
+  sPanel.addEventListener('click', e => {
+    const b = e.target.closest('button[data-s]'); if (!b) return;
+    Sound.setTheme(b.dataset.s); markThemes(); Sound.tick(3);      // play a little preview
+  });
+  document.addEventListener('click', e => { if (sPanel.classList.contains('open') && !e.target.closest('#soundPanel, #themeBtn')) closeSPanel(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && sPanel.classList.contains('open')) { closeSPanel(); themeBtn.focus(); } });
+  markThemes();
+
   function soundLabel() {
-    $('soundBtn').textContent = 'Sound: ' + (Sound.isEnabled() ? 'on' : 'off');
-    $('soundBtn').setAttribute('aria-pressed', Sound.isEnabled());
+    const on = Sound.isEnabled(), btn = $('soundBtn');
+    btn.querySelector('.lbl').textContent = on ? 'Sound on' : 'Sound off';
+    btn.querySelector('use').setAttribute('href', on ? '#i-volume' : '#i-mute');
+    btn.setAttribute('aria-pressed', on);
+    btn.title = on ? 'Sound on (click to mute)' : 'Sound off (click to unmute)';
   }
   $('soundBtn').onclick = () => { Sound.setEnabled(!Sound.isEnabled()); soundLabel(); if (Sound.isEnabled()) Sound.tick(); };
   soundLabel();
@@ -666,7 +1159,7 @@
       };
     });
     const view = data.view && typeof data.view.y === 'number' ? data.view : { y: now.getFullYear(), m: now.getMonth() };
-    return { habits, months, view };
+    return { habits, months, view, daily: (data.daily && typeof data.daily === 'object') ? data.daily : {}, unit: data.unit === 'lb' ? 'lb' : 'kg' };
   }
   $('importGo').onclick = () => {
     let parsed;
