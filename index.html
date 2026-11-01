@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script>(function(){try{var l=JSON.parse(localStorage.getItem('monthly-habit-tracker-v1-look')||'{}');var r=document.documentElement;var m=l.mode||'auto';if(m==='auto')m=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';var tm={cream:'sand',mint:'sage',blush:'rose',sky:'blue',lavender:'lavender'};var th=l.theme||'sage';r.dataset.theme=tm[th]||th;r.dataset.pattern=l.pattern||'none';r.dataset.mode=m;}catch(e){}})();</script>
 <title>Monthly Habit Tracker – free online habit tracker and planner</title>
 <!-- Google Search Console: if you verified with an HTML tag, paste it on the next line so it is never lost when this file is replaced -->
@@ -60,7 +60,13 @@
   html[data-pattern="dots"] body, .pat[data-p="dots"] { background-image: radial-gradient(circle, var(--pat) 1.3px, transparent 1.7px); background-size: 22px 22px; }
   html[data-pattern="grid"] body, .pat[data-p="grid"] { background-image: linear-gradient(var(--pat) 1px, transparent 1px), linear-gradient(90deg, var(--pat) 1px, transparent 1px); background-size: 24px 24px; }
   html[data-pattern="lines"] body, .pat[data-p="lines"] { background-image: linear-gradient(var(--pat) 1px, transparent 1px); background-size: 100% 28px; }
-  body { min-height: 100vh; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { min-height: 100vh; min-height: 100dvh; overflow-x: clip; }
+  button, select, input, td.day button, .tick { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .tablewrap { -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+  /* the habit names stay in view while the month scrolls sideways */
+  th.hab, td.hab { position: sticky; left: 0; z-index: 2; box-shadow: 1px 0 0 var(--ink); }
+  td.hab { background: var(--paper); }
   .report, .notes, .picker { background: var(--paper); }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--page); color: var(--ink); font-family: var(--hand); }
@@ -75,12 +81,12 @@
   .yearbar { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--ink); }
   .yearbar span { font-family: var(--title); font-size: 30px; padding: 0 12px; }
   .yearbar button { background: none; border: 0; color: var(--ink); font: inherit; font-size: 22px; padding: 4px 14px; cursor: pointer; }
-  .yearbar button:hover { background: var(--band); }
+  @media (hover: hover) and (pointer: fine) { .yearbar button:hover { background: var(--band); } }
   .months { display: grid; grid-template-columns: repeat(6, 1fr); }
   .months button { font-family: var(--title); font-size: 24px; letter-spacing: 1px; background: none; color: var(--ink); border: 0; border-right: 2px solid var(--ink); border-bottom: 2px solid var(--ink); padding: 6px 10px; cursor: pointer; }
   .months button:nth-child(6n) { border-right: 0; }
   .months button:nth-child(n+7) { border-bottom: 0; }
-  .months button:hover { background: var(--band); }
+  @media (hover: hover) and (pointer: fine) { .months button:hover { background: var(--band); } }
   .months button[aria-pressed="true"] { background: var(--deep); color: var(--onacc); }
 
   .monthname { font-family: var(--title); font-size: 34px; margin: 18px 0 6px; }
@@ -94,18 +100,18 @@
   th small { display: block; font-size: 10px; opacity: .65; line-height: 1; letter-spacing: 0; }
   th.hab, td.hab { width: 190px; text-align: center; }
   th.res, td.res { width: 76px; font-size: 16px; line-height: 1.15; }
-  td.hab { position: relative; background: transparent; }
+  td.hab { position: sticky; background: var(--paper); }
   td.hab input { width: 100%; height: 100%; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 18px; padding: 0 30px; text-align: center; outline: none; }
   td.hab input:focus { background: var(--band); }
   td.hab input::placeholder { color: var(--ink); opacity: .3; }
   .del { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border: 0; border-radius: 50%; background: none; color: var(--ink); font-size: 16px; line-height: 1; cursor: pointer; opacity: 0; }
-  tr:hover .del, .del:focus-visible { opacity: .6; }
-  .del:hover { opacity: 1; background: var(--soft); }
+  .del:focus-visible { opacity: .6; }
+  @media (hover: hover) and (pointer: fine) { tr:hover .del { opacity: .6; } .del:hover { opacity: 1; background: var(--soft); } }
 
   td.day { cursor: pointer; padding: 0; }
   td.day button { display: block; width: 100%; height: 100%; min-height: 35px; border: 0; background: transparent; color: var(--ink); cursor: pointer; position: relative; }
-  td.day button:hover { background: var(--band); }
-  td.day.locked button, td.day.locked button:hover { cursor: not-allowed; background: transparent; }
+  @media (hover: hover) and (pointer: fine) { td.day button:hover { background: var(--band); } }
+  td.day.locked button { cursor: not-allowed; background: transparent; }
   td.day button:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
   td.day.on button::after {
     content: ''; position: absolute; left: 50%; top: 46%; width: 8px; height: 15px;
@@ -124,9 +130,9 @@
   :root { --lift: rgba(21,21,21,.38); }
   html[data-mode="dark"] { --lift: rgba(0,0,0,.65); }
   td.day { position: relative; transition: transform .35s cubic-bezier(.34, 1.56, .64, 1), box-shadow .25s ease, background-color .2s ease, opacity .45s ease; }
-  td.day.today:hover { transform: translate(-2px, -5px) scale(1.55); z-index: 5; background-color: var(--paper); outline: 1.5px solid var(--ink); box-shadow: 3px 4px 0 var(--lift); }
-  td.day.today button:hover { background: transparent; }
-  .tablewrap:has(td.day.today:hover) :is(td, th):not(.today) { opacity: .78; transition: opacity .45s ease .06s; }
+  @media (hover: hover) and (pointer: fine) { td.day.today:hover { transform: translate(-2px, -5px) scale(1.55); z-index: 5; background-color: var(--paper); outline: 1.5px solid var(--ink); box-shadow: 3px 4px 0 var(--lift); } }
+  @media (hover: hover) and (pointer: fine) { td.day.today button:hover { background: transparent; } }
+  @media (hover: hover) and (pointer: fine) { .tablewrap:has(td.day.today:hover) :is(td, th):not(.today) { opacity: .78; transition: opacity .45s ease .06s; } }
   thead th, td.hab, td.res { transition: opacity .45s ease; }
   td.day.k button::after { content: ''; position: absolute; left: 50%; top: 50%; width: 11px; height: 3.5px; border-radius: 2px; background: var(--ink); opacity: .6; transform: translate(-50%, -50%); }
   td.day.skip { background-image: linear-gradient(rgba(225,29,46,.28), rgba(225,29,46,.28)); }
@@ -148,7 +154,7 @@
   .addrow { display: flex; justify-content: space-between; align-items: center; margin: 8px 0 0; flex-wrap: wrap; gap: 8px; }
   .addrow .hint { font-size: 14px; opacity: .7; }
   .btn { font: inherit; font-size: 17px; background: none; color: var(--ink); border: 2px solid var(--ink); padding: 4px 14px; cursor: pointer; }
-  .btn:hover { background: var(--deep); color: var(--onacc); }
+  @media (hover: hover) and (pointer: fine) { .btn:hover { background: var(--deep); color: var(--onacc); } }
   .btns { display: flex; gap: 8px; flex-wrap: nowrap; justify-content: flex-end; }
   @media (max-width: 640px) { .btns { flex-wrap: wrap; } }
 
@@ -176,7 +182,7 @@
   dialog h2 { margin: 0 0 6px; font-weight: normal; font-size: 24px; }
   dialog p { margin: 0 0 12px; font-size: 16px; }
   dialog input[type=file] { font: inherit; margin-bottom: 10px; max-width: 100%; }
-  dialog textarea { width: 100%; font: inherit; font-size: 14px; color: var(--ink); background: transparent; border: 2px solid var(--ink); padding: 8px; }
+  dialog textarea { width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: transparent; border: 2px solid var(--ink); padding: 8px; }
   .dlgbtns { display: flex; gap: 8px; margin-top: 12px; }
 
   /* ---- icon buttons that expand to show their label on hover / focus ---- */
@@ -184,9 +190,9 @@
   .ibtn svg { width: 22px; height: 22px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .35s cubic-bezier(.3,1.6,.5,1); }
   .ibtn .dot { width: 18px; height: 18px; border: 1.5px solid var(--ink); flex: none; border-radius: 50%; }
   .ibtn .lbl { max-width: 0; opacity: 0; white-space: nowrap; margin-left: 0; transition: max-width .32s cubic-bezier(.22,1,.36,1), opacity .2s ease .04s, margin .32s cubic-bezier(.22,1,.36,1); }
-  .ibtn:hover .lbl, .ibtn:focus-visible .lbl { max-width: 220px; opacity: 1; margin-left: 8px; }
-  .ibtn:hover, .ibtn:focus-visible { background: var(--deep); color: var(--onacc); }
-  .ibtn:hover svg, .ibtn:focus-visible svg { transform: rotate(-10deg) scale(1.15); }
+  @media (hover: hover) and (pointer: fine) { .ibtn:hover .lbl, .ibtn:focus-visible .lbl { max-width: 220px; opacity: 1; margin-left: 8px; } }
+  @media (hover: hover) and (pointer: fine) { .ibtn:hover, .ibtn:focus-visible { background: var(--deep); color: var(--onacc); } }
+  @media (hover: hover) and (pointer: fine) { .ibtn:hover svg, .ibtn:focus-visible svg { transform: rotate(-10deg) scale(1.15); } }
   .ibtn:active { transform: scale(.93); }
   .ibtn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
   .ibtn.static { cursor: default; }
@@ -221,7 +227,7 @@
   td.day.fresh.x button::before { animation: xa .2s ease-out; }
   td.day.fresh.x button::after { animation: xb .2s .05s ease-out backwards; }
   @keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
-  .doodle { transition: transform .3s; } .doodle:hover { animation: wiggle .6s ease; }
+  .doodle { transition: transform .3s; }
   .months button { transition: background .2s, color .2s; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
   .btns { position: relative; }
@@ -259,7 +265,7 @@
   .moodb[data-v="4"] { --mc: #f2d04b; --mt: rgba(242,208,75,.4); }   /* good: yellow */
   .moodb[data-v="5"] { --mc: #7dbb7f; --mt: rgba(125,187,127,.4); }  /* great: green */
   .moodb { background: var(--mt); }
-  .moodb:hover { background: var(--mc); color: #26332a; transform: translateY(-2px); }
+  @media (hover: hover) and (pointer: fine) { .moodb:hover { background: var(--mc); color: #26332a; transform: translateY(-2px); } }
   .moodb[aria-pressed="true"] { background: var(--mc); color: #26332a; transform: scale(1.08); box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--ink); }
   .moodb:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
   .dailyhint { margin: 12px 0 0; font-size: 14px; opacity: .6; }
@@ -288,7 +294,7 @@
   .none { opacity: .6; font-size: 16px; }
   .thb { display: block; width: 100%; text-align: left; font: inherit; font-size: 17px; color: var(--ink); background: transparent; border: 2px solid var(--ink); border-radius: 12px; padding: 8px 12px; margin: 0 0 8px; cursor: pointer; transition: background .2s, color .2s; }
   .thb:last-child { margin-bottom: 0; }
-  .thb:hover { background: var(--band); }
+  @media (hover: hover) and (pointer: fine) { .thb:hover { background: var(--band); } }
   .thb[aria-pressed="true"] { background: var(--deep); color: var(--onacc); }
   .thb:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
   /* ---- today-first layout ---- */
@@ -296,8 +302,6 @@
   .todaygrid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; margin-top: 16px; align-items: start; }
   @media (max-width: 760px) { .todaygrid { grid-template-columns: 1fr; } }
   .today { border: 2px solid var(--ink); background: var(--paper); padding: 14px 18px 16px; }
-  .thead2 { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-  .thead2 h2 { font-family: var(--title); font-size: 44px; line-height: 1; margin: 0; letter-spacing: 1px; }
   .tprog { font-size: 17px; opacity: .75; }
   .tbarwrap { position: relative; padding-top: 38px; margin: 0 0 6px; }
   .tbar { position: relative; height: 16px; border: 1.5px solid var(--ink); border-radius: 999px; overflow: hidden; background: var(--band); margin: 0; }
@@ -327,7 +331,7 @@
   .tlist { list-style: none; margin: 0; padding: 0; }
   .titem { display: flex; align-items: center; gap: 14px; padding: 9px 0; border-bottom: 1.5px solid var(--soft); }
   .tick { position: relative; width: 46px; height: 46px; flex: none; border: 2px solid var(--ink); border-radius: 12px; background: transparent; color: var(--ink); cursor: pointer; padding: 0; transition: transform .15s ease, background-color .2s ease; }
-  .tick:hover { background: var(--band); transform: translateY(-1px); }
+  @media (hover: hover) and (pointer: fine) { .tick:hover { background: var(--band); transform: translateY(-1px); } }
   .tick:active { transform: scale(.95); }
   .tick:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
   .tick[data-s="1"]::after { content: ''; position: absolute; left: 50%; top: 46%; width: 11px; height: 21px; border-right: 4px solid var(--deep); border-bottom: 4px solid var(--deep); transform: translate(-50%, -55%) rotate(40deg); }
@@ -341,7 +345,8 @@
   .tname { flex: 1; min-width: 0; font: inherit; font-size: 22px; color: var(--ink); background: transparent; border: 0; border-bottom: 1.5px solid transparent; outline: none; padding: 4px 2px; }
   .tname:focus { border-bottom-color: var(--ink); background: var(--band); }
   .tdel { border: 0; background: none; color: var(--ink); font-size: 22px; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; opacity: 0; transition: opacity .2s; flex: none; }
-  .titem:hover .tdel, .tdel:focus-visible { opacity: .6; } .tdel:hover { opacity: 1; background: var(--soft); }
+  .tdel:focus-visible { opacity: .6; }
+  @media (hover: hover) and (pointer: fine) { .titem:hover .tdel { opacity: .6; } .tdel:hover { opacity: 1; background: var(--soft); } .doodle:hover { animation: wiggle .6s ease; } td.day.locked button:hover { background: transparent; } }
   @media (hover: none) { .tdel { opacity: .4; } }
   .tempty { font-size: 17px; opacity: .7; margin: 12px 0 4px; }
   .tadd { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
@@ -349,7 +354,7 @@
   .tadd input:focus { background: var(--band); border-bottom-style: solid; }
   .tadd input::placeholder { color: var(--ink); opacity: .45; }
   .tadd button { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; display: grid; place-items: center; padding: 0; transition: background .2s, color .2s; }
-  .tadd button:hover { background: var(--deep); color: var(--onacc); }
+  @media (hover: hover) and (pointer: fine) { .tadd button:hover { background: var(--deep); color: var(--onacc); } }
   .tadd button svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
 
   /* ---- the expandable month tray ---- */
@@ -366,11 +371,66 @@
   .trayhead { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-top: 4px; }
   .tray .hint { font-size: 14px; opacity: .7; margin: 12px 0 0; }
   .tray .notes { margin-top: 18px; }
-  .heading h1, .thead2 h2 { color: var(--deep); }
+  .heading h1 { color: var(--deep); }
   .tprog { color: var(--deep); opacity: .9; }
+  .ver { text-align: center; font-size: 12px; opacity: .45; margin: 18px 0 0; }
+  .sidecol { display: grid; gap: 20px; align-content: start; min-width: 0; }
+  .thead3 { display: flex; align-items: center; gap: 10px; }
+  .thead3 h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 22px; font-weight: normal; flex: 1; }
+  .thead3 h2 svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .thist { width: 34px; height: 34px; flex: none; border: 2px solid var(--ink); border-radius: 50%; background: transparent; color: var(--ink); display: grid; place-items: center; cursor: pointer; padding: 0; transition: background .2s, color .2s; }
+  .thist svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  @media (hover: hover) and (pointer: fine) { .thist:hover { background: var(--deep); color: var(--onacc); } .toitem:hover .tdel { opacity: .6; } }
+  .thist:focus-visible, .cb:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .tolist { list-style: none; margin: 8px 0 0; padding: 0; }
+  .toitem { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1.5px solid var(--soft); }
+  .cb { position: relative; width: 28px; height: 28px; flex: none; border: 2px solid var(--ink); border-radius: 8px; background: transparent; cursor: pointer; padding: 0; transition: background .2s; }
+  .cb[aria-checked="true"] { background: var(--soft); }
+  .cb[aria-checked="true"]::after { content: ''; position: absolute; left: 50%; top: 46%; width: 7px; height: 14px; border-right: 3px solid var(--deep); border-bottom: 3px solid var(--deep); transform: translate(-50%, -55%) rotate(40deg); animation: pop .14s ease-out; }
+  .toitem .tt { flex: 1; min-width: 0; width: auto; font: inherit; font-size: 18px; color: var(--ink); background: transparent; border: 0; border-bottom: 1.5px solid transparent; outline: none; padding: 3px 2px; }
+  .toitem .tt:focus { border-bottom-color: var(--ink); background: var(--band); }
+  .toitem.done .tt { text-decoration: line-through; opacity: .55; }
+  .hlist { list-style: none; margin: 0; padding: 0; }
+  .hlist li { padding: 3px 0; font-size: 16px; }
+  .hlist li.done { opacity: .65; }
+  .hk { display: inline-block; width: 22px; }
+  .hcount { margin-left: auto; font-size: 14px; opacity: .7; }
+  .daydate { font-family: var(--title); font-size: 40px; line-height: 1; letter-spacing: 1px; margin: 22px 0 0; color: var(--deep); }
+  .daily h2 { font-size: 22px; }
   .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 8px 16px; font-size: 16px; opacity: 0; pointer-events: none; transition: opacity .2s; }
   .toast.show { opacity: 1; }
 
+  /* ---- small screens ---- */
+  @media (max-width: 640px) {
+    body { padding: 14px 14px 28px; padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
+    .heading p { font-size: 15px; }
+    header { gap: 10px; }
+    .addrow { justify-content: center; margin-top: 10px; }
+    .btns { justify-content: center; }
+    .today { padding: 12px 14px 14px; }
+    .daydate { font-size: 32px; margin-top: 16px; }
+    .titem { gap: 12px; }
+    .tname { font-size: 20px; }
+    .tick { width: 52px; height: 52px; }
+    .tadd input { font-size: 18px; }
+    .report { padding: 12px 14px 14px; }
+    .moods { gap: 6px; justify-content: space-between; }
+    .moodb { width: 48px; height: 48px; }
+    .traybar { margin-top: 18px; }
+    .ibtn.wide { width: 100%; justify-content: center; }
+    .trayin { margin: -22px 0; padding: 22px 0; }
+    .tablewrap { margin: -18px 0; padding: 18px 0; }
+    .trayhead { flex-direction: column; align-items: stretch; gap: 12px; }
+    .picker { width: 100%; }
+    .monthname { font-size: 30px; margin-top: 4px; }
+    table { min-width: 1130px; }
+    th.hab, td.hab { width: 120px; }
+    td.hab input { font-size: 16px; padding: 0 20px 0 6px; }
+    .foot { flex-direction: column; align-items: flex-start; gap: 10px; }
+    dialog.repdlg { max-height: 88vh; max-height: 88dvh; }
+    .hrow { grid-template-columns: minmax(70px, 1fr) 1.6fr 40px; gap: 8px; }
+  }
+  @media (max-width: 380px) { .heading h1 { font-size: 38px; } .tick { width: 48px; height: 48px; } .moodb { width: 44px; height: 44px; } }
   @media print {
     .tray { grid-template-rows: 1fr !important; opacity: 1 !important; visibility: visible !important; }
     body { padding: 0; background-image: none !important; } dialog, .ibtn.info, .slot.left, .btns, .traybar, .todaygrid, .del, .addrow .hint, .yearbar button { display: none !important; }
@@ -410,6 +470,9 @@
   <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
   <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-habit" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 3 3 5-6"/></symbol>
 </defs></svg>
 <div class="sheet">
   <header>
@@ -463,9 +526,10 @@
   </div>
 
 
+  <p class="daydate" id="dailyDate"></p>
   <div class="todaygrid">
     <section class="today" id="todayCard" aria-label="Today's habits">
-      <div class="thead2"><h2>Today</h2><span class="tprog" id="todayProg"></span></div>
+      <div class="thead3"><h2><svg aria-hidden="true"><use href="#i-habit"/></svg>Habits</h2><span class="tprog" id="todayProg"></span></div>
       <div class="tbarwrap" id="tbarwrap">
         <div class="tbar" id="tbar" aria-hidden="true"><i id="todayBar"><b class="heat" id="heat"></b><b class="cold" id="cold"></b></i></div>
         <canvas class="fx" id="fx" aria-hidden="true"></canvas>
@@ -478,8 +542,19 @@
         <button id="newHabitBtn" type="button" aria-label="Add habit" title="Add habit"><svg aria-hidden="true"><use href="#i-plus"/></svg></button>
       </div>
     </section>
+    <div class="sidecol">
+    <section class="report todo" id="todoCard" aria-label="Today's to-do list">
+      <div class="thead3"><h2><svg aria-hidden="true"><use href="#i-list"/></svg>To-do</h2><span class="tprog" id="todoProg"></span><button class="thist" id="todoHist" type="button" title="To-do history" aria-label="To-do history"><svg aria-hidden="true"><use href="#i-history"/></svg></button></div>
+      <ul class="tolist" id="todoList"></ul>
+      <p class="tempty" id="todoEmpty" hidden>Nothing yet. Add a task below.</p>
+      <div class="tadd">
+        <input id="newTodo" type="text" maxlength="120" placeholder="Add a task…" aria-label="Add a task" autocomplete="off">
+        <button id="newTodoBtn" type="button" aria-label="Add task" title="Add task"><svg aria-hidden="true"><use href="#i-plus"/></svg></button>
+      </div>
+      <p class="dailyhint">Starts fresh every day. Past days are kept in History.</p>
+    </section>
     <section class="report daily" id="dailyCard" aria-label="Today's check-in">
-      <h2><svg aria-hidden="true"><use href="#i-sun"/></svg><span id="dailyDate">Today</span></h2>
+      <h2><svg aria-hidden="true"><use href="#i-smile"/></svg>Check-in</h2>
       <label><span class="lb"><svg aria-hidden="true"><use href="#i-scale"/></svg>Weight</span>
         <div class="wrow"><input id="dWeight" type="number" inputmode="decimal" step="0.1" min="0" placeholder="0.0"><select id="dUnit" aria-label="Unit"><option value="kg">kg</option><option value="lb">lb</option></select></div>
       </label>
@@ -494,6 +569,7 @@
       </div>
       <p class="dailyhint">Starts fresh every day.</p>
     </section>
+    </div>
   </div>
 
   <div class="traybar">
@@ -527,7 +603,7 @@
     </table>
   </div>
 
-      <p class="hint">Click a box to cycle: ✓ done, ✗ missed, – skipped, then blank. Only today can be edited.</p>
+      <p class="hint">Click a box to cycle: ✓ done, ✗ missed, – skipped. Only today can be edited.</p>
     <section class="notes">
       <textarea id="notes" placeholder="Notes for this month…" aria-label="Notes for this month"></textarea>
     </section>
@@ -551,12 +627,20 @@
       <path d="M52 108 c-5 -6 -12 2 -4 8 l4 3 l5 -4 c7 -6 0 -14 -5 -7z" fill="var(--paper)"/>
     </svg>
   </div>
+  <p class="ver">version 2026.10.29 · e</p>
 </div>
 <dialog id="reportDlg" class="repdlg" aria-label="Monthly report">
   <div class="repin">
     <div class="rephead"><h2><svg aria-hidden="true"><use href="#i-clipboard"/></svg><span id="repTitle">Monthly Report</span></h2>
       <button class="ibtn" id="repClose" title="Close" aria-label="Close"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
     <div id="repBody"></div>
+  </div>
+</dialog>
+<dialog id="todoDlg" class="repdlg" aria-label="To-do history">
+  <div class="repin">
+    <div class="rephead"><h2><svg aria-hidden="true"><use href="#i-history"/></svg><span>To-do history</span></h2>
+      <button class="ibtn" id="todoClose" type="button" title="Close" aria-label="Close"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div id="todoHistBody"></div>
   </div>
 </dialog>
 <dialog id="importDlg">
@@ -588,6 +672,7 @@
   };
   state.daily = state.daily || {};
   state.unit = state.unit || 'kg';
+  state.todos = state.todos || {};
 
   function load() {
     try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; }
@@ -964,7 +1049,7 @@
     return 0;
   }
 
-  // cycle one day's mark: blank -> tick -> cross -> dash -> blank (only today can change)
+  // cycle one day's mark: blank (only at the start) -> tick -> cross -> dash -> tick ... (only today can change)
   function applyCycle(id, y, m, d) {
     if (!canEdit(y, m, d)) return null;
     const md = monthData(y, m);
@@ -973,8 +1058,8 @@
     const k = new Set(md.skips[id] || []);
     if (t.has(d)) { t.delete(d); c.add(d); Sound.cross(); }            // done -> missed
     else if (c.has(d)) { c.delete(d); k.add(d); Sound.erase(); }       // missed -> skipped (dash)
-    else if (k.has(d)) { k.delete(d); Sound.erase(); }                 // skipped -> blank
-    else { t.add(d); Sound.tick(d); }                                  // blank -> done
+    else if (k.has(d)) { k.delete(d); t.add(d); Sound.tick(d); }       // skipped -> done (never back to blank)
+    else { t.add(d); Sound.tick(d); }                                  // blank (first click) -> done
     md.ticks[id] = [...t].sort((a, b) => a - b);
     md.crosses[id] = [...c].sort((a, b) => a - b);
     md.skips[id] = [...k].sort((a, b) => a - b);
@@ -1203,6 +1288,66 @@
   $('newHabit').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addNamedHabit(); } });
   $('newHabitBtn').onclick = addNamedHabit;
 
+  // ---- daily to-do list: one list per calendar day, blank again each new day, every day kept ----
+  function todayTodos() { const k = keyOf(new Date()); return state.todos[k] || (state.todos[k] = []); }
+  function updateTodoProgress() {
+    const items = state.todos[keyOf(new Date())] || [], done = items.filter(t => t.done).length;
+    $('todoProg').textContent = items.length ? done + ' of ' + items.length + ' done' : '';
+  }
+  function removeTodo(id) {
+    const k = keyOf(new Date());
+    state.todos[k] = (state.todos[k] || []).filter(t => t.id !== id);
+    save(); renderTodo(); updateReport();
+  }
+  function todoRow(t) {
+    const li = document.createElement('li'); li.className = 'toitem' + (t.done ? ' done' : ''); li.dataset.id = t.id;
+    const cb = document.createElement('button'); cb.type = 'button'; cb.className = 'cb';
+    cb.setAttribute('role', 'checkbox'); cb.setAttribute('aria-checked', String(!!t.done)); cb.setAttribute('aria-label', 'Mark task done');
+    cb.onclick = () => {
+      t.done = !t.done; save();
+      li.classList.toggle('done', t.done); cb.setAttribute('aria-checked', String(t.done));
+      updateTodoProgress(); updateReport();
+      if (t.done) Sound.tick(Math.max(1, todayTodos().filter(x => x.done).length)); else Sound.erase();
+    };
+    const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'tt'; inp.value = t.text; inp.maxLength = 120;
+    inp.setAttribute('aria-label', 'Task'); inp.autocomplete = 'off';
+    inp.oninput = () => { t.text = inp.value; save(); };
+    inp.onblur = () => { if (!t.text.trim()) removeTodo(t.id); };
+    const del = document.createElement('button'); del.type = 'button'; del.className = 'tdel'; del.textContent = '×';
+    del.title = 'Remove task'; del.setAttribute('aria-label', 'Remove task'); del.onclick = () => removeTodo(t.id);
+    li.append(cb, inp, del); return li;
+  }
+  function renderTodo() {
+    const list = $('todoList'); list.innerHTML = '';
+    const items = state.todos[keyOf(new Date())] || [];
+    items.forEach(t => list.appendChild(todoRow(t)));
+    $('todoEmpty').hidden = items.length > 0;
+    updateTodoProgress();
+  }
+  function addTodo() {
+    const inp = $('newTodo'), text = inp.value.trim(); if (!text) return;
+    todayTodos().push({ id: uid(), text, done: false }); save();
+    inp.value = ''; renderTodo(); updateReport(); inp.focus();
+  }
+  $('newTodo').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTodo(); } });
+  $('newTodoBtn').onclick = addTodo;
+  const todoDlg = $('todoDlg');
+  function renderTodoHistory() {
+    const keys = Object.keys(state.todos).filter(k => (state.todos[k] || []).length).sort().reverse().slice(0, 120);
+    const body = $('todoHistBody');
+    if (!keys.length) { body.innerHTML = '<p class="none">No tasks saved yet.</p>'; return; }
+    const today = keyOf(new Date());
+    body.innerHTML = keys.map(k => {
+      const list = state.todos[k], done = list.filter(t => t.done).length;
+      const label = new Date(k + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      return '<div class="repsec"><h3>' + esc(label) + (k === today ? ' · today' : '') + '<span class="hcount">' + done + ' of ' + list.length + '</span></h3><ul class="hlist">' +
+        list.map(t => '<li class="' + (t.done ? 'done' : '') + '"><span class="hk">' + (t.done ? '✓' : '○') + '</span>' + esc(t.text) + '</li>').join('') + '</ul></div>';
+    }).join('');
+  }
+  $('todoHist').onclick = () => { renderTodoHistory(); todoDlg.showModal(); };
+  $('todoClose').onclick = () => todoDlg.close();
+  todoDlg.addEventListener('click', e => { if (e.target === todoDlg) todoDlg.close(); });
+
   // ---- the expandable month tray ----
   const tray = $('tray'), trayBtn = $('trayBtn');
   trayBtn.onclick = () => {
@@ -1211,6 +1356,13 @@
     trayBtn.setAttribute('aria-expanded', String(open));
     $('trayLbl').textContent = open ? 'Hide full month' : 'See full month';
     Sound.flip(open ? 1 : -1);
+    if (open) setTimeout(() => {                    // on a small screen, bring today's column into view
+      const wrap = document.querySelector('.tablewrap'), th = document.querySelector('#thead th.today');
+      if (wrap && th && wrap.scrollWidth > wrap.clientWidth + 4) {
+        const left = th.getBoundingClientRect().left - wrap.getBoundingClientRect().left + wrap.scrollLeft;
+        wrap.scrollTo({ left: Math.max(0, left - wrap.clientWidth / 2 + th.offsetWidth / 2), behavior: 'smooth' });
+      }
+    }, 140);
   };
 
   // ---- daily check-in (weight + mood): one entry per calendar day, blank again each new day ----
@@ -1233,7 +1385,7 @@
     en.mood = en.mood === v ? 0 : v; save(); renderDaily();
     if (en.mood) Sound.tick(v * 2);
   }));
-  setInterval(() => { if (keyOf(new Date()) !== shownKey) { renderDaily(); renderTable(); renderToday(); } }, 30000);
+  setInterval(() => { if (keyOf(new Date()) !== shownKey) { renderDaily(); renderTable(); renderToday(); renderTodo(); } }, 30000);
 
   // ---- monthly report (opens from its button) ----
   const repDlg = $('reportDlg');
@@ -1301,6 +1453,14 @@
       h += line;
     } else h += '<div class="none">No mood logged this month.</div>';
     h += '</div>';
+
+    // to-do totals for the month
+    const pre = y + '-' + pad(m + 1) + '-';
+    let tTot = 0, tDone = 0, tDays = 0;
+    Object.keys(state.todos).forEach(k => { if (k.indexOf(pre) !== 0) return; const l = state.todos[k] || []; if (!l.length) return; tDays++; tTot += l.length; tDone += l.filter(t => t.done).length; });
+    h += '<div class="repsec"><h3>' + ico('list') + 'To-do</h3>' + (tTot
+      ? '<div>' + tDone + ' of ' + tTot + ' tasks done (' + Math.round(tDone / tTot * 100) + '%)</div><div class="repsub">' + tDays + ' day' + (tDays === 1 ? '' : 's') + ' with tasks</div>'
+      : '<div class="none">No tasks this month.</div>') + '</div>';
 
     $('repBody').innerHTML = h;
     $('repWin').addEventListener('input', e => { monthData().report.win = e.target.value; save(); });
@@ -1512,7 +1672,7 @@
       };
     });
     const view = data.view && typeof data.view.y === 'number' ? data.view : { y: now.getFullYear(), m: now.getMonth() };
-    return { habits, months, view, daily: (data.daily && typeof data.daily === 'object') ? data.daily : {}, unit: data.unit === 'lb' ? 'lb' : 'kg' };
+    return { habits, months, view, daily: (data.daily && typeof data.daily === 'object') ? data.daily : {}, unit: data.unit === 'lb' ? 'lb' : 'kg', todos: (data.todos && typeof data.todos === 'object') ? data.todos : {} };
   }
   $('importGo').onclick = () => {
     let parsed;
@@ -1522,7 +1682,7 @@
     state = parsed; save(); dlg.close(); renderAll(); toast('Data imported');
   };
 
-  function renderAll() { renderPicker(); renderTable(); renderReport(); renderToday(); }
+  function renderAll() { renderPicker(); renderTable(); renderReport(); renderToday(); renderTodo(); }
   renderAll();
 })();
 </script>
